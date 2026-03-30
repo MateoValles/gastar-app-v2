@@ -1,0 +1,25 @@
+{
+  "name": "gastar-app-v2",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "build": "pnpm -r build",
+    "lint": "eslint packages/",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,js,json,css}\"",
+    "format:check": "prettier --check \"packages/**/*.{ts,tsx,js,json,css}\"",
+    "db:generate": "prisma generate --schema=database/prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=database/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=database/prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "prisma": "^6.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}
