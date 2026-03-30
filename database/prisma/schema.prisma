@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AccountType {
+  checking
+  savings
+  credit_card
+  cash
+  investment
+
+  @@map("account_type")
+}
+
+enum TransactionType {
+  income
+  expense
+  transfer
+
+  @@map("transaction_type")
+}
+
+enum Currency {
+  ARS
+  USD
+  EUR
+
+  @@map("currency")
+}
+
+enum TransferSide {
+  out // money leaves this account (debit)
+  in  // money arrives at this account (credit)
+
+  @@map("transfer_side")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER
+// Only identity data lives here: credentials, OAuth, password reset.
+// Preferences live in UserSettings (separate table, SRP).
+// resetTokenHash: stored as SHA-256 of the real token — never store plain text.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  passwordHash     String?   @map("password_hash")
+  name             String
+  googleId         String?   @unique @map("google_id")
+  resetTokenHash   String?   @map("reset_token_hash")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  accounts   Account[]
+  categories Category[]
+  settings   UserSettings?
+
+  @@index([resetTokenHash])
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER SETTINGS
+// One-to-one with User. Extracted from User to keep identity separate from prefs.
+// Currently holds the user's preferred language. New settings go here as the
+// app grows — keeps the User model focused on identity/auth.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserSettings {
+  id       String @id @default(uuid())
+  userId   String @unique @map("user_id")
+  language String @default("es") // "es" | "en"
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCOUNT
+// Each account has exactly ONE currency. Balances are NEVER consolidated
+// across currencies — dashboard shows separate totals per currency group.
+// balance: stored for fast reads. MUST be updated inside prisma.$transaction().
+// Credit card accounts: balance can be negative (represents outstanding debt).
+// arsBalance REMOVED: derived, Post-MVP concern, source of desync bugs.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Account {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  name      String
+  type      AccountType
+  currency  Currency    @default(ARS)
+  balance   Decimal     @default(0) @db.Decimal(15, 2)
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[] @relation("AccountTransactions")
+  // Reverse relation for transactions where this account is the transfer peer
+  transferPeerTransactions Transaction[] @relation("TransferPeer")
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATEGORY
+// Every category belongs to a user (userId is NOT NULL).
+// Default categories are copied to each user at registration time — they become
+// the user's own categories and can be renamed, edited, or deleted freely.
+// The default category templates live in the auth service registration logic,
+// NOT in the database.
+// color: hex string for charts and UI badges (e.g. "#FF5733").
+// onDelete for transactions = Restrict: prevents accidental data loss.
+//   The service must warn the user if they try to delete a category with transactions.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Category {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  icon      String?
+  color     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId])
+  @@map("categories")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRANSACTION
+//
+// KEY DESIGN DECISIONS:
+//
+// 1. TRANSFERS = 2 RECORDS linked by transferGroupId (same UUID on both sides).
+//    One with transferSide=out (debit from source account),
+//    one with transferSide=in (credit to destination account).
+//    This keeps balance update logic uniform: same code path for all types.
+//
+// 2. SAME-CURRENCY TRANSFER: fromAmount == toAmount, exchangeRate = null.
+//    CROSS-CURRENCY TRANSFER: amounts differ, exchangeRate is set (rate fixed at
+//    transaction time, entered manually by user, never recalculated).
+//
+// 3. categoryId is NULLABLE — transfers don't belong to a spending category.
+//    Business logic enforces it's required for income and expense.
+//    onDelete = Restrict on category: if a category has transactions, it cannot
+//    be deleted until the user reassigns or deletes those transactions first.
+//
+// 4. transferGroupId: links the two sides of a transfer. Both share the same UUID.
+//    transferSide: 'out' on the source account tx, 'in' on the destination tx.
+//    transferPeerAccountId: the OTHER account in the transfer (for display only:
+//    "Transfer to/from [Account Name]"). Uses SetNull on delete — if the peer
+//    account is deleted, the transaction keeps its amount/date but loses the link.
+//
+// 5. amount is ALWAYS POSITIVE. Direction implied by type + transferSide:
+//    - income:         balance += amount
+//    - expense:        balance -= amount
+//    - transfer (out): balance -= amount
+//    - transfer (in):  balance += amount
+//
+// 6. arsAmount REMOVED (was a derived, desync-prone, Post-MVP field).
+//    exchangeRate only set for cross-currency transfers.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Transaction {
+  id                    String          @id @default(uuid())
+  accountId             String          @map("account_id")
+  categoryId            String?         @map("category_id")    // null for transfers
+  type                  TransactionType
+  amount                Decimal         @db.Decimal(15, 2)     // always positive
+  // Only set for cross-currency transfers. Rate fixed at transaction time.
+  exchangeRate          Decimal?        @map("exchange_rate") @db.Decimal(15, 6)
+  description           String?
+  date                  DateTime        @db.Date
+  // Transfer fields — null for income/expense transactions
+  transferGroupId       String?         @map("transfer_group_id")   // UUID shared by both sides
+  transferSide          TransferSide?   @map("transfer_side")        // 'out' or 'in'
+  transferPeerAccountId String?         @map("transfer_peer_account_id") // the other account (display only)
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @updatedAt @map("updated_at")
+
+  account             Account   @relation("AccountTransactions", fields: [accountId], references: [id], onDelete: Cascade)
+  category            Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  transferPeerAccount Account?  @relation("TransferPeer", fields: [transferPeerAccountId], references: [id], onDelete: SetNull)
+
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([date])
+  @@index([accountId, date])
+  @@index([transferGroupId])
+  // Composite index for dashboard aggregations (sum by type, filtered by date range per account)
+  @@index([accountId, type, date])
+  @@map("transactions")
+}
