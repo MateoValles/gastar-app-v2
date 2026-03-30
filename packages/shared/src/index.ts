@@ -11,6 +11,7 @@ export * from './schemas/auth.schema.js';
 export * from './schemas/account.schema.js';
 export * from './schemas/category.schema.js';
 export * from './schemas/transaction.schema.js';
+export * from './schemas/user.schema.js';
 
 // Types
 export * from './types/api.types.js';
