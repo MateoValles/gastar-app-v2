@@ -7,6 +7,7 @@ import { env } from '@/config/env.js';
 import { errorMiddleware } from '@/middleware/error.middleware.js';
 import { NotFoundError } from '@/lib/errors.js';
 import authRoutes from '@/modules/auth/auth.routes.js';
+import accountsRoutes from '@/modules/accounts/accounts.routes.js';
 
 const app = express();
 
@@ -58,6 +59,9 @@ app.get('/health', (_req, res) => {
 
 // Auth routes
 app.use('/v1/auth', authLimiter, authRoutes);
+
+// Accounts routes
+app.use('/v1/accounts', accountsRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 
