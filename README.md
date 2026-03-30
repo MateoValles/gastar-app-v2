@@ -77,11 +77,58 @@ gastar-app-v2/
 
 ---
 
+## Implementation Progress
+
+### Backend API (`/v1`)
+
+| Module | Status | PR | Endpoints |
+|--------|--------|----|-----------|
+| Auth | ✅ Done | [#3](https://github.com/MateoValles/gastar-app-v2/pull/3) | 8 endpoints (register, login, refresh, logout, Google OAuth, password reset) |
+| Accounts | ✅ Done | [#5](https://github.com/MateoValles/gastar-app-v2/pull/5) | Full CRUD with ownership enforcement |
+| Categories | ✅ Done | [#6](https://github.com/MateoValles/gastar-app-v2/pull/6) | Full CRUD with pre-flight delete checks |
+| Transactions | ✅ Done | [#7](https://github.com/MateoValles/gastar-app-v2/pull/7) | Full CRUD, 2-record transfers, atomic balance updates, pagination + filtering |
+| Users | ✅ Done | [#8](https://github.com/MateoValles/gastar-app-v2/pull/8) | GET/PATCH profile with settings |
+| Dashboard | 🔲 Pending | — | Summary endpoint |
+
+### Frontend
+Not started yet.
+
+### Infrastructure
+Not started yet.
+
+---
+
 ## Getting Started
 
-> **Note**: The project is currently in the design phase. Implementation has not started yet.
+### Prerequisites
 
-Setup instructions will be added once the monorepo is bootstrapped.
+- **Node.js** 22 LTS
+- **pnpm** 9+
+- **PostgreSQL** 16+
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/MateoValles/gastar-app-v2.git
+cd gastar-app-v2
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database credentials and secrets
+
+# Run database migrations
+pnpm db:migrate
+
+# Build the shared package
+pnpm --filter @gastar/shared build
+
+# Start the backend dev server
+pnpm --filter @gastar/backend dev
+```
 
 ---
 
