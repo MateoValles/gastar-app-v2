@@ -9,6 +9,7 @@ import { NotFoundError } from '@/lib/errors.js';
 import authRoutes from '@/modules/auth/auth.routes.js';
 import accountsRoutes from '@/modules/accounts/accounts.routes.js';
 import categoriesRoutes from '@/modules/categories/categories.routes.js';
+import transactionsRoutes from '@/modules/transactions/transactions.routes.js';
 
 const app = express();
 
@@ -66,6 +67,9 @@ app.use('/v1/accounts', accountsRoutes);
 
 // Categories routes
 app.use('/v1/categories', categoriesRoutes);
+
+// Transactions routes
+app.use('/v1/transactions', transactionsRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 
