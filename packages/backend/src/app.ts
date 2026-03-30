@@ -1,13 +1,72 @@
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
+import { env } from '@/config/env.js';
+import { errorMiddleware } from '@/middleware/error.middleware.js';
+import { NotFoundError } from '@/lib/errors.js';
+import authRoutes from '@/modules/auth/auth.routes.js';
 
 const app = express();
 
-// Middleware
-app.use(express.json());
+// ── Security middleware ────────────────────────────────────────────────────────
 
-// Health check
+// 1. Security headers (must be first)
+app.use(helmet());
+
+// 2. CORS — allow configured origin with credentials for cookie-based auth
+app.use(
+  cors({
+    origin: env.CORS_ORIGIN,
+    credentials: true,
+  }),
+);
+
+// 3. Cookie parser — required for req.cookies (refresh token endpoint)
+app.use(cookieParser());
+
+// 4. Body parser
+app.use(express.json({ limit: '1mb' }));
+
+// ── Rate limiting ─────────────────────────────────────────────────────────────
+
+/**
+ * Auth rate limiter — 20 requests per 15-minute window.
+ * Applied to all /v1/auth routes. Thresholds can be tuned per-route later.
+ */
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 20,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: {
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many requests. Please try again later.',
+    },
+  },
+});
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+
+// Health check (no rate limit — monitoring tools use this)
 app.get('/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok' } });
 });
+
+// Auth routes
+app.use('/v1/auth', authLimiter, authRoutes);
+
+// ── 404 handler ───────────────────────────────────────────────────────────────
+
+app.use((_req, _res, next) => {
+  next(new NotFoundError('Route not found'));
+});
+
+// ── Global error handler (MUST be last) ──────────────────────────────────────
+
+app.use(errorMiddleware);
 
 export default app;
