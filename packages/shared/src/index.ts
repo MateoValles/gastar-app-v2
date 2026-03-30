@@ -19,3 +19,4 @@ export * from './types/user.types.js';
 export * from './types/account.types.js';
 export * from './types/category.types.js';
 export * from './types/transaction.types.js';
+export * from './types/dashboard.types.js';

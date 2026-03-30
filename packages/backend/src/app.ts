@@ -11,6 +11,7 @@ import accountsRoutes from '@/modules/accounts/accounts.routes.js';
 import categoriesRoutes from '@/modules/categories/categories.routes.js';
 import transactionsRoutes from '@/modules/transactions/transactions.routes.js';
 import usersRoutes from '@/modules/users/users.routes.js';
+import dashboardRoutes from '@/modules/dashboard/dashboard.routes.js';
 
 const app = express();
 
@@ -74,6 +75,9 @@ app.use('/v1/transactions', transactionsRoutes);
 
 // Users routes
 app.use('/v1/users', usersRoutes);
+
+// Dashboard routes
+app.use('/v1/dashboard', dashboardRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 
