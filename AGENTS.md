@@ -148,6 +148,9 @@ See [`COMMIT_RULES.md`](./COMMIT_RULES.md) for full details.
 - Conventional Commits with scopes: `feat(backend):`, `fix(frontend):`, `chore(db):`.
 - Squash merge to `main`.
 - Never add AI attribution to commits.
+- **Pre-commit**: GGA (Gentleman Guardian Angel) reviews all staged code via AI before commit. Must pass.
+- **PR review**: GitHub Copilot Code Review runs on every PR. All review threads must be resolved before merge.
+- `--no-verify` allowed ONLY when GGA fails due to diff size exceeding provider limits.
 
 ---
 
@@ -161,3 +164,5 @@ See [`COMMIT_RULES.md`](./COMMIT_RULES.md) for full details.
 - **Don't put API calls in React components** — use hooks that wrap React Query.
 - **Don't access `req`/`res` in services** — services are pure business logic.
 - **Don't create global/shared categories** — every category has a `userId`.
+- **Don't merge PRs with unresolved Copilot review threads** — thread resolution is enforced via GitHub ruleset.
+- **Don't use merge or rebase merges** — squash merge only to `main`, enforced via ruleset.

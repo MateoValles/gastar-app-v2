@@ -92,7 +92,8 @@
 | Playwright           | End-to-end testing                         |
 | ESLint               | Linting                                    |
 | Prettier             | Code formatting                            |
-| husky + lint-staged  | Pre-commit hooks                           |
+| GGA (Gentleman Guardian Angel) | AI-powered pre-commit code review    |
+| GitHub Copilot Code Review | Automated PR code review (GitHub ruleset) |
 
 ---
 
@@ -119,7 +120,8 @@ gastar-app-v2/
 │   │       │   ├── auth.schema.ts
 │   │       │   ├── account.schema.ts
 │   │       │   ├── category.schema.ts
-│   │       │   └── transaction.schema.ts
+│   │       │   ├── transaction.schema.ts
+│   │       │   └── user.schema.ts
 │   │       ├── types/        # Shared TypeScript types/interfaces
 │   │       │   ├── api.types.ts        # API response wrappers
 │   │       │   ├── account.types.ts
@@ -128,7 +130,8 @@ gastar-app-v2/
 │   │       │   └── user.types.ts
 │   │       ├── constants/    # Shared constants & enums
 │   │       │   ├── currencies.ts
-│   │       │   └── account-types.ts
+│   │       │   ├── account-types.ts
+│   │       │   └── transaction-types.ts
 │   │       └── locales/      # Translation files (JSON)
 │   │           ├── es.json   # Spanish (primary)
 │   │           └── en.json   # English
@@ -927,35 +930,37 @@ Push to main → Dokploy detects → Builds Docker images → Deploys containers
 
 These features constitute the Minimum Viable Product. Nothing more, nothing less.
 
+> **Progress note**: All backend API modules except Dashboard have been implemented. Frontend, i18n setup, PWA, and infrastructure are pending.
+
 ### Auth
-- [ ] Email/password registration
-- [ ] Email/password login
-- [ ] Google OAuth login
-- [ ] JWT access + refresh token flow
-- [ ] Password reset via email (Resend)
-- [ ] Logout
+- [x] Email/password registration
+- [x] Email/password login
+- [x] Google OAuth login
+- [x] JWT access + refresh token flow
+- [x] Password reset via email (Resend)
+- [x] Logout
 
 ### Accounts
-- [ ] List all accounts with balances
-- [ ] Create account (name, type, currency, initial balance)
-- [ ] Edit account
-- [ ] Delete account (with confirmation)
+- [x] List all accounts with balances
+- [x] Create account (name, type, currency, initial balance)
+- [x] Edit account
+- [x] Delete account (with confirmation)
 
 ### Categories
-- [ ] Default categories created on user registration
-- [ ] List all categories
-- [ ] Create category (name, icon, color)
-- [ ] Edit category (including defaults — user owns them)
-- [ ] Delete category (with confirmation — blocked if transactions exist, must reassign first)
+- [x] Default categories created on user registration
+- [x] List all categories
+- [x] Create category (name, icon, color)
+- [x] Edit category (including defaults — user owns them)
+- [x] Delete category (with confirmation — blocked if transactions exist, must reassign first)
 
 ### Transactions
-- [ ] List transactions with pagination
-- [ ] Filter by: account, category, type, date range
-- [ ] Create income transaction
-- [ ] Create expense transaction
-- [ ] Create transfer between accounts (same and cross-currency)
-- [ ] Edit transaction
-- [ ] Delete transaction (transfers delete both sides atomically)
+- [x] List transactions with pagination
+- [x] Filter by: account, category, type, date range
+- [x] Create income transaction
+- [x] Create expense transaction
+- [x] Create transfer between accounts (same and cross-currency)
+- [x] Edit transaction
+- [x] Delete transaction (transfers delete both sides atomically)
 
 ### i18n
 - [ ] react-i18next setup with lazy-loaded locales
