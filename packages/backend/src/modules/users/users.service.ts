@@ -46,7 +46,7 @@ function toUserProfile(user: {
  * Throws `NotFoundError` if the user does not exist (e.g. JWT for deleted account).
  */
 export async function getMe(userId: string): Promise<UserProfile> {
-  const user = await prisma.user.findFirst({
+  const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { settings: true },
   });
@@ -76,7 +76,10 @@ export async function updateMe(
 ): Promise<UserProfile> {
   // Early existence check — a deleted user with a still-valid JWT must get 404,
   // not a misleading P2003 → 409 when only settings fields are sent.
-  const currentUser = await prisma.user.findFirst({ where: { id: userId } });
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
   if (!currentUser) {
     throw new NotFoundError('User not found');
   }
@@ -96,7 +99,10 @@ export async function updateMe(
 
   // Email uniqueness check — explicit pre-check (not relying on P2002)
   if (email !== undefined) {
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
     if (existing && existing.id !== userId) {
       throw new ConflictError('An account with this email already exists');
     }
@@ -131,7 +137,7 @@ export async function updateMe(
   }
 
   // Re-fetch with settings included to build the response
-  const updated = await prisma.user.findFirst({
+  const updated = await prisma.user.findUnique({
     where: { id: userId },
     include: { settings: true },
   });
