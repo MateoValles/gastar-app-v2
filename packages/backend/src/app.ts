@@ -8,6 +8,7 @@ import { errorMiddleware } from '@/middleware/error.middleware.js';
 import { NotFoundError } from '@/lib/errors.js';
 import authRoutes from '@/modules/auth/auth.routes.js';
 import accountsRoutes from '@/modules/accounts/accounts.routes.js';
+import categoriesRoutes from '@/modules/categories/categories.routes.js';
 
 const app = express();
 
@@ -62,6 +63,9 @@ app.use('/v1/auth', authLimiter, authRoutes);
 
 // Accounts routes
 app.use('/v1/accounts', accountsRoutes);
+
+// Categories routes
+app.use('/v1/categories', categoriesRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 
