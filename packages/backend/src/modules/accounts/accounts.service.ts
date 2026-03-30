@@ -104,21 +104,29 @@ export async function createAccount(
  * Updates the `name` and/or `type` of an account owned by `userId`.
  * Currency and balance are immutable via this endpoint.
  * Throws `NotFoundError` if the account does not exist or is not owned by the user.
+ *
+ * Uses `updateMany` with compound `{ id, userId }` to enforce ownership in a
+ * single query, then fetches the updated row. Same pattern as `deleteAccount`.
  */
 export async function updateAccount(
   userId: string,
   accountId: string,
   data: UpdateAccountInput,
 ): Promise<AccountResponse> {
-  // Ownership check — throws NotFoundError if not found or not owned
-  await getAccount(userId, accountId);
-
-  // Prisma update requires unique where (id only). Ownership already verified above.
-  // Defense-in-depth: the getAccount() read + immediate update is safe because
-  // single-user app with no concurrent mutation concerns.
-  const account = await prisma.account.update({
-    where: { id: accountId },
+  // updateMany with compound where enforces ownership in the query itself.
+  // Returns count=0 if not found or not owned → throw NotFoundError.
+  const { count } = await prisma.account.updateMany({
+    where: { id: accountId, userId },
     data,
+  });
+
+  if (count === 0) {
+    throw new NotFoundError('Account not found');
+  }
+
+  // Fetch the updated row for the response (updateMany doesn't return records).
+  const account = await prisma.account.findUniqueOrThrow({
+    where: { id: accountId },
   });
 
   return toAccountResponse(account);
