@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="34 147 387 560">
+  <!-- G Mark -->
+  <path fill="#D97706" d="M410.5 256L312 157.5V220H216C121.1 220 44 297.1 44 392s77.1 172 172 172c78.1 0 144.1-52.9 164.7-124H307c-18.3 31.5-52.6 52-91 52-59.6 0-108-48.4-108-108s48.4-108 108-108h96v62.5L410.5 256z"/>
+  <!-- GASTAR text -->
+  <text
+    x="227"
+    y="670"
+    text-anchor="middle"
+    font-family="'Plus Jakarta Sans', 'Inter', system-ui, sans-serif"
+    font-weight="700"
+    font-size="88"
+    letter-spacing="8"
+    fill="#D97706"
+  >GASTAR</text>
+</svg>
