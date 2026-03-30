@@ -1,2 +1,50 @@
-# AI
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Prisma
+database/prisma/migrations/*.sql.bak
+
+# Docker
+docker-compose.override.yml
+
+# PWA generated files
+dev-dist/
+
+# TypeScript
+*.tsbuildinfo
+
+# AI / Local tools
+.gga
 nul
+.atl/

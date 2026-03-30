@@ -23,6 +23,8 @@
 15. [Feature Scope (Post-MVP)](#15-feature-scope-post-mvp)
 16. [Conventions & Standards](#16-conventions--standards)
 
+> **Related documents**: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (visual identity, component variants, page layouts, toast catalog) · [`COMMIT_RULES.md`](./COMMIT_RULES.md) (git conventions) · [`AGENTS.md`](./AGENTS.md) (AI agent instructions)
+
 ---
 
 ## 1. Project Overview
@@ -692,7 +694,7 @@ GET /v1/transactions?accountId=xxx&categoryId=xxx&type=expense&dateFrom=2025-01-
 
 ### Layout Strategy: Responsive Mobile-First
 
-Single responsive layout that adapts across breakpoints. NOT two separate layouts.
+Single responsive layout that adapts across breakpoints. NOT two separate layouts. See [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) for the complete layout specification per page, component variants, and responsive behavior details.
 
 **Breakpoints** (Tailwind defaults):
 - `sm`: 640px — Large phones
@@ -974,6 +976,7 @@ These features constitute the Minimum Viable Product. Nothing more, nothing less
 ### PWA
 - [ ] Installable with manifest
 - [ ] Service worker for offline shell
+- [ ] Dark mode with system preference detection and user toggle
 - [ ] Responsive layout (mobile bottom nav + desktop sidebar)
 
 ### Infrastructure
