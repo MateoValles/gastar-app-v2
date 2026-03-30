@@ -108,7 +108,7 @@ BREAKING CHANGE: success responses now wrap data in { success: true, data: T }
 
 ### Pre-Commit: GGA (Gentleman Guardian Angel)
 
-GGA is an AI-powered pre-commit hook that reviews ALL staged `.ts/.tsx/.js/.jsx` files against the rules in this document before a commit goes through. Configuration lives in the `.gga` file at the repo root. Provider: `opencode:github-copilot/gpt-5.4-mini`. The review MUST pass — if it fails, fix the issues and retry. Do not bypass it.
+GGA is an AI-powered pre-commit hook that reviews ALL staged `.ts/.tsx/.js/.jsx` files against the rules in this document before a commit goes through. Configuration lives in a `.gga` file at the repo root (gitignored — each contributor creates their own). Provider: `opencode:github-copilot/gpt-5.4-mini`. The review MUST pass — if it fails, fix the issues and retry. Do not bypass it.
 
 ### Pull Request: GitHub Copilot Code Review
 

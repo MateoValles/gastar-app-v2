@@ -121,10 +121,7 @@ cp .env.example .env
 # Edit .env with your database credentials and secrets
 
 # Run database migrations
-pnpm --filter @gastar/backend exec prisma migrate dev
-
-# Seed the database (optional)
-pnpm --filter @gastar/backend exec prisma db seed
+pnpm db:migrate
 
 # Build the shared package
 pnpm --filter @gastar/shared build
