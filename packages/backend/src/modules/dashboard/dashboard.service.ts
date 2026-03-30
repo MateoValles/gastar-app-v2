@@ -195,7 +195,7 @@ export async function getSummary(userId: string): Promise<DashboardSummaryRespon
       };
     })
     // Sort descending by total so the donut chart shows highest spend first
-    .sort((a, b) => new Decimal(b.total).minus(new Decimal(a.total)).toNumber());
+    .sort((a, b) => new Decimal(b.total).cmp(new Decimal(a.total)));
 
   // ── Step 7: Map recentTransactions ───────────────────────────────────────────
   const recentTransactions: RecentTransactionItem[] = recentRaw.map((tx) => ({
