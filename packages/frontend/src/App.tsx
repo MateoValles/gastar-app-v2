@@ -6,6 +6,7 @@ import { queryClient } from '@/lib/query-client';
 import '@/lib/i18n';
 import { useUIStore } from '@/stores/ui.store';
 import { AppRoutes } from '@/routes';
+import { GlobalErrorBoundary } from '@/components/error/GlobalErrorBoundary';
 
 function ThemeInitializer() {
   const { theme, setTheme } = useUIStore();
@@ -20,12 +21,14 @@ function ThemeInitializer() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeInitializer />
-        <AppRoutes />
-        <Toaster position="bottom-right" richColors />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ThemeInitializer />
+          <AppRoutes />
+          <Toaster position="bottom-right" richColors />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </GlobalErrorBoundary>
   );
 }

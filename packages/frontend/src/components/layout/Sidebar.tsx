@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui.store';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 
 interface NavItem {
   to: string;
@@ -89,13 +89,18 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* New transaction button */}
+      {/* New transaction button — NavLink styled as primary button to avoid nested interactive elements */}
       <div className={cn('border-t border-border p-4', sidebarCollapsed && 'px-2')}>
-        <NavLink to="/transactions/new">
-          <Button className={cn('w-full gap-2', sidebarCollapsed && 'px-2')}>
-            <Plus className="size-4 flex-shrink-0" />
-            {!sidebarCollapsed && <span>{t('transactions.newTransaction')}</span>}
-          </Button>
+        <NavLink
+          to="/transactions/new"
+          className={cn(
+            buttonVariants({ variant: 'default' }),
+            'w-full gap-2',
+            sidebarCollapsed && 'px-2',
+          )}
+        >
+          <Plus className="size-4 flex-shrink-0" />
+          {!sidebarCollapsed && <span>{t('transactions.newTransaction')}</span>}
         </NavLink>
       </div>
     </aside>

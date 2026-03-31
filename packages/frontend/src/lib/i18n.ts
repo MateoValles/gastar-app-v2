@@ -7,8 +7,13 @@ const SUPPORTED_LANGUAGES = ['es', 'en'] as const;
 type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 function detectLanguage(): SupportedLanguage {
-  // 1. Check localStorage
-  const stored = localStorage.getItem('i18n_lng');
+  // 1. Check localStorage (may throw in some browser/privacy contexts)
+  let stored: string | null = null;
+  try {
+    stored = localStorage.getItem('i18n_lng');
+  } catch {
+    // localStorage access can fail in some environments
+  }
   if (stored && SUPPORTED_LANGUAGES.includes(stored as SupportedLanguage)) {
     return stored as SupportedLanguage;
   }

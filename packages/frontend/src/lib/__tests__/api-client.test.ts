@@ -14,12 +14,8 @@ import { ApiError } from '../api-error.js';
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
-// Mock window.location
-const mockLocation = { href: '' };
-vi.stubGlobal('window', { location: mockLocation, matchMedia: vi.fn() });
-
-// Mock import.meta.env
-vi.mock('../../../vite-env', () => ({}));
+// Mock window.location without replacing the entire window object
+const originalLocation = window.location;
 
 function mockResponse(status: number, body: unknown, ok?: boolean): Response {
   return {
@@ -36,10 +32,16 @@ describe('api-client', () => {
   beforeEach(() => {
     clearAccessToken();
     mockFetch.mockReset();
-    mockLocation.href = '';
+    // Replace window.location with a mockable object for redirect testing
+    // @ts-expect-error — jsdom doesn't allow direct assignment, but delete + reassign works
+    delete (window as Window & typeof globalThis).location;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).location = { ...originalLocation, href: '', assign: vi.fn(), replace: vi.fn() };
   });
 
   afterEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).location = originalLocation;
     vi.clearAllMocks();
   });
 
@@ -144,7 +146,7 @@ describe('api-client', () => {
         .mockResolvedValueOnce(mockResponse(401, {}, false)); // refresh fails with 401
 
       await expect(apiFetch('/test')).rejects.toThrow(ApiError);
-      expect(mockLocation.href).toBe('/login');
+      expect(window.location.href).toBe('/login');
     });
   });
 

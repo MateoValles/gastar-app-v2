@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from 'react-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { PageErrorBoundary } from '@/components/error/PageErrorBoundary';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 // Lazy-loaded pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -15,9 +16,14 @@ const CategoriesPage = lazy(() => import('@/pages/categories/CategoriesPage'));
 const TransactionsPage = lazy(() => import('@/pages/transactions/TransactionsPage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 
-// ProtectedRoute: Redirect to /login if not authenticated
+// ProtectedRoute: Show loading during hydration, redirect to /login if not authenticated
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -26,9 +32,14 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-// PublicRoute: Redirect to /dashboard if already authenticated
+// PublicRoute: Show loading during hydration, redirect to /dashboard if already authenticated
 function PublicRoute({ children }: { children: ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -73,14 +84,16 @@ export function AppRoutes() {
           }
         />
 
-        {/* Protected routes */}
+        {/* Protected routes — wrapped with AppLayout for Sidebar, TopBar, MobileNav */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <PageErrorBoundary>
-                <DashboardPage />
-              </PageErrorBoundary>
+              <AppLayout>
+                <PageErrorBoundary>
+                  <DashboardPage />
+                </PageErrorBoundary>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -88,9 +101,11 @@ export function AppRoutes() {
           path="/accounts"
           element={
             <ProtectedRoute>
-              <PageErrorBoundary>
-                <AccountsPage />
-              </PageErrorBoundary>
+              <AppLayout>
+                <PageErrorBoundary>
+                  <AccountsPage />
+                </PageErrorBoundary>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -98,9 +113,11 @@ export function AppRoutes() {
           path="/categories"
           element={
             <ProtectedRoute>
-              <PageErrorBoundary>
-                <CategoriesPage />
-              </PageErrorBoundary>
+              <AppLayout>
+                <PageErrorBoundary>
+                  <CategoriesPage />
+                </PageErrorBoundary>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -108,9 +125,11 @@ export function AppRoutes() {
           path="/transactions"
           element={
             <ProtectedRoute>
-              <PageErrorBoundary>
-                <TransactionsPage />
-              </PageErrorBoundary>
+              <AppLayout>
+                <PageErrorBoundary>
+                  <TransactionsPage />
+                </PageErrorBoundary>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -118,9 +137,11 @@ export function AppRoutes() {
           path="/transactions/new"
           element={
             <ProtectedRoute>
-              <PageErrorBoundary>
-                <TransactionsPage />
-              </PageErrorBoundary>
+              <AppLayout>
+                <PageErrorBoundary>
+                  <TransactionsPage />
+                </PageErrorBoundary>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -128,9 +149,11 @@ export function AppRoutes() {
           path="/profile"
           element={
             <ProtectedRoute>
-              <PageErrorBoundary>
-                <ProfilePage />
-              </PageErrorBoundary>
+              <AppLayout>
+                <PageErrorBoundary>
+                  <ProfilePage />
+                </PageErrorBoundary>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
