@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "pnpm --parallel -r dev",
     "build": "pnpm -r build",
+    "test": "pnpm -r --if-present test",
+    "test:backend": "pnpm --filter @gastar/backend test",
     "lint": "eslint packages/",
     "format": "prettier --write \"packages/**/*.{ts,tsx,js,json,css}\"",
     "format:check": "prettier --check \"packages/**/*.{ts,tsx,js,json,css}\"",
