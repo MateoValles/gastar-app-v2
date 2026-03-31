@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Decimal } from '@prisma/client/runtime/library';
 import { createMockPrisma, getMockPrisma } from '@/test/prisma-mock.js';
-import { NotFoundError } from '@/lib/errors.js';
+import { ConflictError, NotFoundError } from '@/lib/errors.js';
 
 // Mock Prisma before importing the service
 vi.mock('@/lib/prisma.js', () => ({ prisma: createMockPrisma() }));
@@ -459,7 +459,7 @@ describe('updateAccount', () => {
   it('updates the account and returns the updated AccountResponse', async () => {
     const updatedPrismaAccount = { ...prismaAccount, name: 'Updated Name', updatedAt: UPDATED };
     mockPrisma.account.updateMany.mockResolvedValue({ count: 1 });
-    mockPrisma.account.findUniqueOrThrow.mockResolvedValue(updatedPrismaAccount);
+    mockPrisma.account.findFirstOrThrow.mockResolvedValue(updatedPrismaAccount);
 
     const result = await updateAccount(USER_ID, ACCOUNT_ID, { name: 'Updated Name' });
 
@@ -469,7 +469,7 @@ describe('updateAccount', () => {
 
   it('calls updateMany with compound { id, userId } for ownership enforcement', async () => {
     mockPrisma.account.updateMany.mockResolvedValue({ count: 1 });
-    mockPrisma.account.findUniqueOrThrow.mockResolvedValue(prismaAccount);
+    mockPrisma.account.findFirstOrThrow.mockResolvedValue(prismaAccount);
 
     await updateAccount(USER_ID, ACCOUNT_ID, { name: 'Updated' });
 
@@ -508,23 +508,23 @@ describe('updateAccount', () => {
     );
   });
 
-  it('re-fetches account after updateMany using findUniqueOrThrow', async () => {
+  it('re-fetches account after updateMany using findFirstOrThrow', async () => {
     mockPrisma.account.updateMany.mockResolvedValue({ count: 1 });
-    mockPrisma.account.findUniqueOrThrow.mockResolvedValue({
+    mockPrisma.account.findFirstOrThrow.mockResolvedValue({
       ...prismaAccount,
       type: 'savings',
     });
 
     await updateAccount(USER_ID, ACCOUNT_ID, { type: 'savings' });
 
-    expect(mockPrisma.account.findUniqueOrThrow).toHaveBeenCalledWith({
-      where: { id: ACCOUNT_ID },
+    expect(mockPrisma.account.findFirstOrThrow).toHaveBeenCalledWith({
+      where: { id: ACCOUNT_ID, userId: USER_ID },
     });
   });
 
   it('can update type field independently', async () => {
     mockPrisma.account.updateMany.mockResolvedValue({ count: 1 });
-    mockPrisma.account.findUniqueOrThrow.mockResolvedValue({
+    mockPrisma.account.findFirstOrThrow.mockResolvedValue({
       ...prismaAccount,
       type: 'investment',
     });
@@ -539,7 +539,7 @@ describe('updateAccount', () => {
 
   it('serializes balance with toFixed(2) on the re-fetched account', async () => {
     mockPrisma.account.updateMany.mockResolvedValue({ count: 1 });
-    mockPrisma.account.findUniqueOrThrow.mockResolvedValue({
+    mockPrisma.account.findFirstOrThrow.mockResolvedValue({
       ...prismaAccount,
       balance: new Decimal('3750.00'),
     });
@@ -552,7 +552,7 @@ describe('updateAccount', () => {
   it('returns the response built from the re-fetched row, not from the updateMany input', async () => {
     // updateMany doesn't return records — service must always re-fetch
     mockPrisma.account.updateMany.mockResolvedValue({ count: 1 });
-    mockPrisma.account.findUniqueOrThrow.mockResolvedValue({
+    mockPrisma.account.findFirstOrThrow.mockResolvedValue({
       ...prismaAccount,
       name: 'Fetched Name',
     });
@@ -576,6 +576,8 @@ describe('deleteAccount', () => {
   });
 
   it('deletes the account successfully and returns void', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(0);
     mockPrisma.account.deleteMany.mockResolvedValue({ count: 1 });
 
     const result = await deleteAccount(USER_ID, ACCOUNT_ID);
@@ -583,7 +585,33 @@ describe('deleteAccount', () => {
     expect(result).toBeUndefined();
   });
 
-  it('calls deleteMany with compound { id, userId } for ownership enforcement', async () => {
+  it('calls findFirst with compound { id, userId } for ownership enforcement', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(0);
+    mockPrisma.account.deleteMany.mockResolvedValue({ count: 1 });
+
+    await deleteAccount(USER_ID, ACCOUNT_ID);
+
+    expect(mockPrisma.account.findFirst).toHaveBeenCalledWith({
+      where: { id: ACCOUNT_ID, userId: USER_ID },
+    });
+  });
+
+  it('calls transaction.count as a pre-flight check before deleting', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(0);
+    mockPrisma.account.deleteMany.mockResolvedValue({ count: 1 });
+
+    await deleteAccount(USER_ID, ACCOUNT_ID);
+
+    expect(mockPrisma.transaction.count).toHaveBeenCalledWith({
+      where: { accountId: ACCOUNT_ID, account: { userId: USER_ID } },
+    });
+  });
+
+  it('calls account.deleteMany with compound { id, userId } when no transactions exist', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(0);
     mockPrisma.account.deleteMany.mockResolvedValue({ count: 1 });
 
     await deleteAccount(USER_ID, ACCOUNT_ID);
@@ -591,10 +619,11 @@ describe('deleteAccount', () => {
     expect(mockPrisma.account.deleteMany).toHaveBeenCalledWith({
       where: { id: ACCOUNT_ID, userId: USER_ID },
     });
+    expect(mockPrisma.account.delete).not.toHaveBeenCalled();
   });
 
-  it('throws NotFoundError when deleteMany returns count=0 (account not found or not owned)', async () => {
-    mockPrisma.account.deleteMany.mockResolvedValue({ count: 0 });
+  it('throws NotFoundError when findFirst returns null (account not found or not owned)', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(null);
 
     await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow(NotFoundError);
     await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toMatchObject({
@@ -604,35 +633,52 @@ describe('deleteAccount', () => {
   });
 
   it('throws NotFoundError with message "Account not found"', async () => {
-    mockPrisma.account.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.account.findFirst.mockResolvedValue(null);
 
     await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow('Account not found');
   });
 
   it('does NOT allow a different user to delete the account (ownership isolation)', async () => {
-    // The compound where { id, userId: OTHER_USER_ID } yields count=0 from DB
-    mockPrisma.account.deleteMany.mockResolvedValue({ count: 0 });
+    // findFirst returns null because userId doesn't match in the where clause
+    mockPrisma.account.findFirst.mockResolvedValue(null);
 
     await expect(deleteAccount(OTHER_USER_ID, ACCOUNT_ID)).rejects.toThrow(NotFoundError);
   });
 
-  it('Prisma cascade handles linked transactions automatically (no transaction count check needed)', async () => {
-    // Schema uses onDelete: Cascade on transactions — service doesn't need to
-    // check for existing transactions before deletion (unlike categories which use Restrict)
-    mockPrisma.account.deleteMany.mockResolvedValue({ count: 1 });
+  it('throws ConflictError when account has existing transactions', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(3);
 
-    await deleteAccount(USER_ID, ACCOUNT_ID);
-
-    // No transaction count call expected
-    expect(mockPrisma.transaction.count).not.toHaveBeenCalled();
+    await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow(ConflictError);
+    // Should NOT reach the delete call
+    expect(mockPrisma.account.deleteMany).not.toHaveBeenCalled();
   });
 
-  it('does not call findFirst before deleteMany — uses single-query ownership pattern', async () => {
-    mockPrisma.account.deleteMany.mockResolvedValue({ count: 1 });
+  it('ConflictError has correct statusCode (409) and code', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(1);
 
-    await deleteAccount(USER_ID, ACCOUNT_ID);
+    await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toMatchObject({
+      statusCode: 409,
+      code: 'CONFLICT',
+    });
+  });
 
-    expect(mockPrisma.account.findFirst).not.toHaveBeenCalled();
-    expect(mockPrisma.account.findMany).not.toHaveBeenCalled();
+  it('ConflictError message mentions existing transactions', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(5);
+
+    await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow(
+      'Cannot delete account with existing transactions',
+    );
+  });
+
+  it('does NOT call transaction.count when account is not found (early exit)', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(null);
+
+    await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow(NotFoundError);
+
+    expect(mockPrisma.transaction.count).not.toHaveBeenCalled();
+    expect(mockPrisma.account.deleteMany).not.toHaveBeenCalled();
   });
 });

@@ -140,9 +140,9 @@ describe('Users Integration Tests', () => {
       });
     });
 
-    it('valid JWT but user deleted from DB → 404', async () => {
-      // Auth middleware only checks JWT validity — NOT user existence.
-      // Service layer's getMe() throws NotFoundError for missing users.
+    it('valid JWT but user deleted from DB → 401 (middleware checks user existence)', async () => {
+      // Auth middleware now checks user existence in DB after JWT verification.
+      // Deleted users with valid JWTs receive 401 UNAUTHORIZED — not 404.
       const { user, token } = await createUser();
 
       // Delete user directly from DB
@@ -153,13 +153,13 @@ describe('Users Integration Tests', () => {
       const res = await request(app)
         .get('/v1/users/me')
         .set('Authorization', `Bearer ${token}`)
-        .expect(404);
+        .expect(401); // Was 404, now middleware catches it
 
       expect(res.body).toMatchObject({
         success: false,
         error: {
-          code: expect.any(String),
-          message: expect.any(String),
+          code: 'UNAUTHORIZED',
+          message: expect.stringContaining('no longer exists'),
         },
       });
     });
