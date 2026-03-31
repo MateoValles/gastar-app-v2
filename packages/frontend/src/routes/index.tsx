@@ -10,6 +10,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const AccountsPage = lazy(() => import('@/pages/accounts/AccountsPage'));
 const CategoriesPage = lazy(() => import('@/pages/categories/CategoriesPage'));
@@ -79,6 +80,16 @@ export function AppRoutes() {
             <PublicRoute>
               <PageErrorBoundary>
                 <ResetPasswordPage />
+              </PageErrorBoundary>
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <PageErrorBoundary>
+                <ForgotPasswordPage />
               </PageErrorBoundary>
             </PublicRoute>
           }

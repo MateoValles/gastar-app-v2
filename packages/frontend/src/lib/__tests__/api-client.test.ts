@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach, afterAll } from 'vitest';
 import {
   apiFetch,
   setAccessToken,
@@ -9,16 +9,21 @@ import {
   del,
 } from '../api-client.js';
 import { ApiError } from '../api-error.js';
+import { server } from '../../test/msw/server.js';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
+// Disable MSW for this test file — it uses direct fetch mocking
+beforeAll(() => server.close());
+afterAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+
 // Mock window.location without replacing the entire window object
 const originalLocation = window.location;
 
 function mockResponse(status: number, body: unknown, ok?: boolean): Response {
-  return {
+  const response = {
     status,
     ok: ok ?? (status >= 200 && status < 300),
     headers: {
@@ -26,6 +31,9 @@ function mockResponse(status: number, body: unknown, ok?: boolean): Response {
     },
     json: async () => body,
   } as unknown as Response;
+  // MSW's bypass passthrough requires .clone() to exist on the response
+  (response as unknown as Record<string, unknown>).clone = () => ({ ...response });
+  return response;
 }
 
 describe('api-client', () => {

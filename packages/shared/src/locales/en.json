@@ -95,7 +95,8 @@
     "forgotPasswordTitle": "Forgot your password?",
     "forgotPasswordSubtitle": "Enter your email and we'll send you a reset link",
     "resetPasswordTitle": "New password",
-    "resetPasswordSubtitle": "Enter your new password"
+    "resetPasswordSubtitle": "Enter your new password",
+    "invalidResetLink": "This reset link is invalid or has expired. Please request a new one."
   },
   "accounts": {
     "title": "My Accounts",
