@@ -189,9 +189,8 @@ describe('Categories Integration Tests', () => {
       });
     });
 
-    it('duplicate category name — allowed (service does not enforce uniqueness by name)', async () => {
-      // The categories service does NOT check for duplicate names — it just creates.
-      // Duplicate names are allowed; only DB unique constraints would block (none on category name).
+    it('duplicate category name → 409 (service enforces case-insensitive uniqueness per user)', async () => {
+      // The categories service now enforces case-insensitive name uniqueness at the service layer.
       const { token } = await createUser();
 
       await request(app)
@@ -200,15 +199,35 @@ describe('Categories Integration Tests', () => {
         .send({ name: 'Duplicate Name' })
         .expect(201);
 
-      // Second creation with same name should also succeed
+      // Second creation with same name should fail with 409
       const res = await request(app)
         .post('/v1/categories')
         .set('Authorization', `Bearer ${token}`)
         .send({ name: 'Duplicate Name' })
+        .expect(409);
+
+      expect(res.body).toMatchObject({
+        success: false,
+        error: { code: 'CONFLICT', message: expect.stringContaining('already exists') },
+      });
+    });
+
+    it('duplicate name check is case-insensitive → 409', async () => {
+      const { token } = await createUser();
+      await request(app)
+        .post('/v1/categories')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Travel' })
         .expect(201);
 
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.name).toBe('Duplicate Name');
+      const res = await request(app)
+        .post('/v1/categories')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'travel' }) // lowercase
+        .expect(409);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.error.code).toBe('CONFLICT');
     });
   });
 
@@ -262,6 +281,30 @@ describe('Categories Integration Tests', () => {
       // Verify name was NOT changed in DB
       const dbCat = await prisma.category.findUnique({ where: { id: categoryB.id } });
       expect(dbCat?.name).toBe('User B Category');
+    });
+
+    it('PATCH with duplicate name → 409', async () => {
+      const { token } = await createUser();
+      await request(app)
+        .post('/v1/categories')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Food' })
+        .expect(201);
+
+      const res2 = await request(app)
+        .post('/v1/categories')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Travel' })
+        .expect(201);
+
+      // Try to rename "Travel" to "Food"
+      const res = await request(app)
+        .patch(`/v1/categories/${res2.body.data.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Food' })
+        .expect(409);
+
+      expect(res.body.error.code).toBe('CONFLICT');
     });
   });
 

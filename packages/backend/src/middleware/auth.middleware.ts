@@ -2,6 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { errors as joseErrors, jwtVerify } from 'jose';
 import { authConfig } from '@/config/auth.js';
 import { UnauthorizedError } from '@/lib/errors.js';
+import { prisma } from '@/lib/prisma.js';
 
 /**
  * TOKEN_EXPIRED is a specialization of UnauthorizedError that signals the
@@ -50,6 +51,16 @@ export const authMiddleware: RequestHandler = async (
 
     if (typeof payload.sub !== 'string' || !payload.sub) {
       throw new UnauthorizedError('Invalid token payload');
+    }
+
+    // Verify user still exists in DB (prevents deleted users with valid JWTs from accessing resources)
+    const userExists = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true }, // Minimal query — only need existence check
+    });
+
+    if (!userExists) {
+      throw new UnauthorizedError('User no longer exists');
     }
 
     req.userId = payload.sub;

@@ -247,6 +247,7 @@ describe('createCategory', () => {
   });
 
   it('creates a category with all fields and returns CategoryResponse', async () => {
+    mockPrisma.category.findFirst.mockResolvedValue(null); // no duplicate
     mockPrisma.category.create.mockResolvedValue(prismaCategory);
 
     const result = await createCategory(USER_ID, {
@@ -259,6 +260,7 @@ describe('createCategory', () => {
   });
 
   it('inserts with the correct userId and input data', async () => {
+    mockPrisma.category.findFirst.mockResolvedValue(null); // no duplicate
     mockPrisma.category.create.mockResolvedValue(prismaCategory);
 
     await createCategory(USER_ID, { name: 'Food & Dining', icon: 'utensils', color: '#FF5733' });
@@ -274,6 +276,7 @@ describe('createCategory', () => {
   });
 
   it('creates a category with only a name (icon and color are optional)', async () => {
+    mockPrisma.category.findFirst.mockResolvedValue(null); // no duplicate
     mockPrisma.category.create.mockResolvedValue(prismaCategoryMinimal);
 
     const result = await createCategory(USER_ID, { name: 'Uncategorized' });
@@ -287,6 +290,7 @@ describe('createCategory', () => {
   });
 
   it('always sets userId from the service parameter, not from user-supplied data', async () => {
+    mockPrisma.category.findFirst.mockResolvedValue(null); // no duplicate
     mockPrisma.category.create.mockResolvedValue(prismaCategory);
 
     await createCategory(USER_ID, { name: 'Food & Dining' });
@@ -295,14 +299,25 @@ describe('createCategory', () => {
     expect(callArg.data.userId).toBe(USER_ID);
   });
 
-  it('allows duplicate category names for the same user (no unique constraint on name)', async () => {
-    // Schema has no @@unique([userId, name]) — duplicate names are valid
-    mockPrisma.category.create.mockResolvedValue({ ...prismaCategory, id: 'cat-uuid-003' });
+  it('throws ConflictError when creating a category with a duplicate name for the same user', async () => {
+    // Service now enforces case-insensitive name uniqueness per user
+    mockPrisma.category.findFirst.mockResolvedValue(prismaCategory); // existing found
 
-    const result = await createCategory(USER_ID, { name: 'Food & Dining' });
+    await expect(createCategory(USER_ID, { name: 'Food & Dining' })).rejects.toThrow(ConflictError);
+    expect(mockPrisma.category.create).not.toHaveBeenCalled();
+  });
 
+  it('duplicate name check is case-insensitive', async () => {
+    // "Food & Dining" already exists, trying to create "FOOD & DINING" should fail
+    mockPrisma.category.findFirst.mockResolvedValue(prismaCategory); // existing found
+    await expect(createCategory(USER_ID, { name: 'FOOD & DINING' })).rejects.toThrow(ConflictError);
+  });
+
+  it('allows same category name for different users (no cross-user uniqueness)', async () => {
+    mockPrisma.category.findFirst.mockResolvedValue(null); // no duplicate for this user
+    mockPrisma.category.create.mockResolvedValue(prismaCategory);
+    const result = await createCategory('other-user-id', { name: 'Food & Dining' });
     expect(result).toBeDefined();
-    expect(mockPrisma.category.create).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -319,9 +334,11 @@ describe('updateCategory', () => {
 
   it('updates the category and returns the updated CategoryResponse', async () => {
     const updatedPrismaCategory = { ...prismaCategory, name: 'Groceries', updatedAt: UPDATED };
+    // findFirst called twice: 1st for duplicate check (returns null), 2nd by getCategory (returns updated row)
+    mockPrisma.category.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(updatedPrismaCategory);
     mockPrisma.category.updateMany.mockResolvedValue({ count: 1 });
-    // getCategory internally calls findFirst
-    mockPrisma.category.findFirst.mockResolvedValue(updatedPrismaCategory);
 
     const result = await updateCategory(USER_ID, CATEGORY_ID, { name: 'Groceries' });
 
@@ -330,8 +347,9 @@ describe('updateCategory', () => {
   });
 
   it('calls updateMany with compound { id, userId } for ownership enforcement', async () => {
+    // findFirst called twice: 1st for duplicate check (returns null), 2nd by getCategory
+    mockPrisma.category.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(prismaCategory);
     mockPrisma.category.updateMany.mockResolvedValue({ count: 1 });
-    mockPrisma.category.findFirst.mockResolvedValue(prismaCategory);
 
     await updateCategory(USER_ID, CATEGORY_ID, { name: 'Updated' });
 
@@ -342,6 +360,8 @@ describe('updateCategory', () => {
   });
 
   it('throws NotFoundError when updateMany returns count=0 (category not found or not owned)', async () => {
+    // findFirst for duplicate check returns null (no conflict), then updateMany returns 0
+    mockPrisma.category.findFirst.mockResolvedValue(null);
     mockPrisma.category.updateMany.mockResolvedValue({ count: 0 });
 
     await expect(updateCategory(USER_ID, CATEGORY_ID, { name: 'New' })).rejects.toThrow(
@@ -354,6 +374,8 @@ describe('updateCategory', () => {
   });
 
   it('throws NotFoundError with message "Category not found"', async () => {
+    // findFirst for duplicate check returns null (no conflict), then updateMany returns 0
+    mockPrisma.category.findFirst.mockResolvedValue(null);
     mockPrisma.category.updateMany.mockResolvedValue({ count: 0 });
 
     await expect(updateCategory(USER_ID, CATEGORY_ID, { name: 'New' })).rejects.toThrow(
@@ -363,6 +385,8 @@ describe('updateCategory', () => {
 
   it('does NOT allow a different user to update the category (ownership isolation)', async () => {
     // The compound where { id, userId: OTHER_USER_ID } would yield count=0 from DB
+    // findFirst for duplicate check returns null (no conflict), then updateMany returns 0
+    mockPrisma.category.findFirst.mockResolvedValue(null);
     mockPrisma.category.updateMany.mockResolvedValue({ count: 0 });
 
     await expect(updateCategory(OTHER_USER_ID, CATEGORY_ID, { name: 'Hijacked' })).rejects.toThrow(
@@ -391,6 +415,25 @@ describe('updateCategory', () => {
       expect.objectContaining({ data: { color: '#00FF00' } }),
     );
     expect(result.color).toBe('#00FF00');
+  });
+
+  it('throws ConflictError when updating name to an existing category name', async () => {
+    // findFirst for duplicate check finds a collision (different category, same name)
+    mockPrisma.category.findFirst.mockResolvedValue(prismaCategory); // name collision
+    await expect(
+      updateCategory(USER_ID, 'cat-uuid-001', { name: 'Existing Name' }),
+    ).rejects.toThrow(ConflictError);
+    expect(mockPrisma.category.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('skips duplicate check when name is not in the update payload', async () => {
+    mockPrisma.category.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.category.findFirst.mockResolvedValue(prismaCategory);
+    await updateCategory(USER_ID, 'cat-uuid-001', { icon: 'new-icon' });
+    // findFirst should NOT be called for the duplicate check since name is not being updated
+    // (it IS called by getCategory for re-fetch, but the duplicate-check call should be absent)
+    // We verify updateMany WAS called — meaning no ConflictError was thrown
+    expect(mockPrisma.category.updateMany).toHaveBeenCalled();
   });
 });
 
@@ -501,7 +544,7 @@ describe('deleteCategory', () => {
     await deleteCategory(USER_ID, CATEGORY_ID);
 
     expect(mockPrisma.transaction.count).toHaveBeenCalledWith({
-      where: { categoryId: CATEGORY_ID },
+      where: { categoryId: CATEGORY_ID, category: { userId: USER_ID } },
     });
   });
 

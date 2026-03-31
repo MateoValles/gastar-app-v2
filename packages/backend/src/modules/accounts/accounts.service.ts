@@ -1,7 +1,7 @@
 import type { Account as PrismaAccount } from '@prisma/client';
 import type { AccountResponse, CreateAccountInput, UpdateAccountInput } from '@gastar/shared';
 import { prisma } from '@/lib/prisma.js';
-import { NotFoundError } from '@/lib/errors.js';
+import { ConflictError, NotFoundError } from '@/lib/errors.js';
 
 /**
  * Accounts Service
@@ -118,8 +118,9 @@ export async function updateAccount(
   }
 
   // Fetch the updated row for the response (updateMany doesn't return records).
-  const account = await prisma.account.findUniqueOrThrow({
-    where: { id: accountId },
+  // Ownership already enforced by updateMany above — scope to userId for defense-in-depth.
+  const account = await prisma.account.findFirstOrThrow({
+    where: { id: accountId, userId },
   });
 
   return toAccountResponse(account);
@@ -127,17 +128,54 @@ export async function updateAccount(
 
 /**
  * Deletes an account owned by `userId`.
- * Prisma `onDelete: Cascade` on transactions handles cleanup automatically.
  * Throws `NotFoundError` if the account does not exist or is not owned by the user.
+ * Throws `ConflictError` if the account has existing transactions (onDelete: Restrict).
+ * The user must delete or reassign transactions before the account can be deleted.
  */
 export async function deleteAccount(userId: string, accountId: string): Promise<void> {
-  // Use deleteMany with compound where to enforce ownership in a single query.
-  // Returns count=0 if not found or not owned → throw NotFoundError.
-  const { count } = await prisma.account.deleteMany({
+  // 1. Check account exists and is owned by user.
+  const account = await prisma.account.findFirst({
     where: { id: accountId, userId },
   });
 
-  if (count === 0) {
+  if (!account) {
     throw new NotFoundError('Account not found');
+  }
+
+  // 2. Check if account has transactions — Restrict prevents deletion at DB level,
+  //    but we throw a clear business error instead of letting Prisma throw P2003.
+  //    Ownership already verified in step 1. Scoped to account.userId for defense-in-depth.
+  const transactionCount = await prisma.transaction.count({
+    where: { accountId, account: { userId } },
+  });
+
+  if (transactionCount > 0) {
+    throw new ConflictError(
+      'Cannot delete account with existing transactions. Delete or reassign transactions first.',
+    );
+  }
+
+  // 3. Delete (safe — no transactions exist).
+  //    Use deleteMany with compound where for defense-in-depth ownership enforcement.
+  //    Check count to detect race condition where account is deleted between checks.
+  //    Catch P2003 FK violation in case a transaction is created between count and delete.
+  try {
+    const { count } = await prisma.account.deleteMany({
+      where: { id: accountId, userId },
+    });
+
+    if (count === 0) {
+      throw new NotFoundError('Account not found');
+    }
+  } catch (error) {
+    if (error instanceof NotFoundError || error instanceof ConflictError) {
+      throw error;
+    }
+    if (error && typeof error === 'object' && 'code' in error && (error as any).code === 'P2003') {
+      throw new ConflictError(
+        'Cannot delete account with existing transactions. Delete or reassign transactions first.',
+      );
+    }
+    throw error;
   }
 }

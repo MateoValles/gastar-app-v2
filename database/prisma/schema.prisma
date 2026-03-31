@@ -198,7 +198,7 @@ model Transaction {
   createdAt             DateTime        @default(now()) @map("created_at")
   updatedAt             DateTime        @updatedAt @map("updated_at")
 
-  account             Account   @relation("AccountTransactions", fields: [accountId], references: [id], onDelete: Cascade)
+  account             Account   @relation("AccountTransactions", fields: [accountId], references: [id], onDelete: Restrict)
   category            Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   transferPeerAccount Account?  @relation("TransferPeer", fields: [transferPeerAccountId], references: [id], onDelete: SetNull)
 

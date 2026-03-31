@@ -15,7 +15,8 @@
  *  - Empty list returns [] (not 404)
  *  - Initial balance is "0.00" (Decimal serialized as string)
  *  - PATCH does NOT allow updating balance (schema only allows name + type)
- *  - DELETE with transactions → cascades (Prisma onDelete: Cascade on transactions)
+ *  - DELETE with transactions → 409 ConflictError (onDelete: Restrict on transactions)
+ *  - DELETE with no transactions → 200, account removed
  *  - balance in response is a string with 2 decimal places (Decimal.toFixed(2))
  */
 import request from 'supertest';
@@ -360,9 +361,10 @@ describe('Accounts Integration Tests', () => {
       expect(dbAccount).toBeNull();
     });
 
-    it('with transactions — cascades (Prisma onDelete: Cascade on transactions) → 200', async () => {
-      // Schema uses onDelete: Cascade on Account → Transaction relation.
-      // Deleting the account also deletes linked transactions automatically.
+    it('with transactions — returns 409 ConflictError (onDelete: Restrict on transactions)', async () => {
+      // Schema uses onDelete: Restrict on Account → Transaction relation.
+      // The service throws ConflictError BEFORE reaching the DB delete.
+      // The user must delete or reassign transactions first.
       const { user, token } = await createUser();
       const account = await createAccount(user.id, { name: 'Account With Transactions' });
       const category = await createCategory(user.id, { name: 'Test Category' });
@@ -375,17 +377,22 @@ describe('Accounts Integration Tests', () => {
       const res = await request(app)
         .delete(`/v1/accounts/${account.id}`)
         .set('Authorization', `Bearer ${token}`)
-        .expect(200);
+        .expect(409);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body).toMatchObject({
+        success: false,
+        error: {
+          code: 'CONFLICT',
+          message: expect.stringContaining('existing transactions'),
+        },
+      });
 
-      // Verify account is gone
+      // Verify account AND transaction still exist in DB
       const dbAccount = await prisma.account.findUnique({ where: { id: account.id } });
-      expect(dbAccount).toBeNull();
+      expect(dbAccount).not.toBeNull();
 
-      // Verify transaction was also deleted (cascade)
       const dbTx = await prisma.transaction.findUnique({ where: { id: tx.id } });
-      expect(dbTx).toBeNull();
+      expect(dbTx).not.toBeNull();
     });
 
     it("other user's account → 404", async () => {

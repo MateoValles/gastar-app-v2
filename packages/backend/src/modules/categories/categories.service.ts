@@ -1,9 +1,5 @@
 import type { Category as PrismaCategory } from '@prisma/client';
-import type {
-  CategoryResponse,
-  CreateCategoryInput,
-  UpdateCategoryInput,
-} from '@gastar/shared';
+import type { CategoryResponse, CreateCategoryInput, UpdateCategoryInput } from '@gastar/shared';
 import { prisma } from '@/lib/prisma.js';
 import { ConflictError, NotFoundError } from '@/lib/errors.js';
 
@@ -58,10 +54,7 @@ export async function listCategories(userId: string): Promise<CategoryResponse[]
  * Returns a single category by ID, scoped to `userId`.
  * Throws `NotFoundError` if the category does not exist or is not owned by the user.
  */
-export async function getCategory(
-  userId: string,
-  categoryId: string,
-): Promise<CategoryResponse> {
+export async function getCategory(userId: string, categoryId: string): Promise<CategoryResponse> {
   const category = await prisma.category.findFirst({
     where: { id: categoryId, userId },
   });
@@ -75,11 +68,25 @@ export async function getCategory(
 
 /**
  * Creates a new category for `userId`.
+ * Throws `ConflictError` if a category with the same name (case-insensitive) already exists
+ * for this user. Uniqueness is enforced at the service layer — no DB constraint required.
  */
 export async function createCategory(
   userId: string,
   data: CreateCategoryInput,
 ): Promise<CategoryResponse> {
+  // Case-insensitive duplicate name check for the same user
+  const existing = await prisma.category.findFirst({
+    where: {
+      userId,
+      name: { equals: data.name, mode: 'insensitive' },
+    },
+  });
+
+  if (existing) {
+    throw new ConflictError('A category with this name already exists');
+  }
+
   const category = await prisma.category.create({
     data: {
       ...data,
@@ -93,6 +100,8 @@ export async function createCategory(
 /**
  * Updates the `name`, `icon`, and/or `color` of a category owned by `userId`.
  * Throws `NotFoundError` if the category does not exist or is not owned by the user.
+ * Throws `ConflictError` if `data.name` is provided and another category with that name
+ * (case-insensitive) already exists for this user.
  *
  * Uses `updateMany` with compound `{ id, userId }` to enforce ownership in a
  * single query, then fetches the updated row via `getCategory`.
@@ -102,6 +111,21 @@ export async function updateCategory(
   categoryId: string,
   data: UpdateCategoryInput,
 ): Promise<CategoryResponse> {
+  // Case-insensitive duplicate name check (only if name is being updated)
+  if (data.name) {
+    const existing = await prisma.category.findFirst({
+      where: {
+        userId,
+        name: { equals: data.name, mode: 'insensitive' },
+        id: { not: categoryId },
+      },
+    });
+
+    if (existing) {
+      throw new ConflictError('A category with this name already exists');
+    }
+  }
+
   // updateMany with compound where enforces ownership in the query itself.
   // Returns count=0 if not found or not owned → throw NotFoundError.
   const { count } = await prisma.category.updateMany({
@@ -137,8 +161,9 @@ export async function deleteCategory(
   const category = await getCategory(userId, categoryId);
 
   // Pre-flight: check for associated transactions BEFORE attempting delete.
+  // Ownership already verified by getCategory above. Scoped via category.userId for defense-in-depth.
   const txCount = await prisma.transaction.count({
-    where: { categoryId },
+    where: { categoryId, category: { userId } },
   });
 
   if (txCount > 0) {
