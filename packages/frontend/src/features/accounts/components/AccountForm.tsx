@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import {
@@ -64,8 +64,7 @@ export function AccountForm({
     register,
     handleSubmit,
     reset,
-    setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<CreateAccountInput | UpdateAccountInput>({
     resolver: zodResolver(schema),
@@ -84,11 +83,6 @@ export function AccountForm({
       }
     }
   }, [open, isEdit, account, reset]);
-
-  const selectedType = watch('type');
-  const selectedCurrency = !isEdit
-    ? watch('currency' as keyof (CreateAccountInput | UpdateAccountInput))
-    : undefined;
 
   function handleFormSubmit(data: CreateAccountInput | UpdateAccountInput) {
     onSubmit(data);
@@ -109,6 +103,7 @@ export function AccountForm({
           id="account-name"
           placeholder={t('accounts.namePlaceholder')}
           disabled={isLoading}
+          aria-invalid={!!errors.name}
           {...register('name')}
         />
         {errors.name && <span className="text-xs text-destructive">{t('common.required')}</span>}
@@ -117,22 +112,28 @@ export function AccountForm({
       {/* Type */}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="account-type">{t('accounts.accountType')}</Label>
-        <Select
-          value={selectedType as string}
-          onValueChange={(value) => setValue('type', value as CreateAccountInput['type'])}
-          disabled={isLoading}
-        >
-          <SelectTrigger id="account-type" className="w-full">
-            <SelectValue placeholder={t('common.select')} />
-          </SelectTrigger>
-          <SelectContent>
-            {ACCOUNT_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
-                {t(`accounts.types.${type}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Controller
+          name="type"
+          control={control}
+          render={({ field }) => (
+            <Select
+              value={field.value as string}
+              onValueChange={field.onChange}
+              disabled={isLoading}
+            >
+              <SelectTrigger id="account-type" className="w-full" aria-invalid={!!errors.type}>
+                <SelectValue placeholder={t('common.select')} />
+              </SelectTrigger>
+              <SelectContent>
+                {ACCOUNT_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {t(`accounts.types.${type}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
         {errors.type && <span className="text-xs text-destructive">{t('common.required')}</span>}
       </div>
 
@@ -140,27 +141,32 @@ export function AccountForm({
       {!isEdit && (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="account-currency">{t('common.currency')}</Label>
-          <Select
-            value={selectedCurrency as string}
-            onValueChange={(value) =>
-              setValue(
-                'currency' as keyof (CreateAccountInput | UpdateAccountInput),
-                value as CreateAccountInput['currency'],
-              )
-            }
-            disabled={isLoading}
-          >
-            <SelectTrigger id="account-currency" className="w-full">
-              <SelectValue placeholder={t('common.select')} />
-            </SelectTrigger>
-            <SelectContent>
-              {CURRENCIES.map((currency) => (
-                <SelectItem key={currency} value={currency}>
-                  {t(`accounts.currencies.${currency}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Controller
+            name={'currency' as keyof (CreateAccountInput | UpdateAccountInput)}
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value as string}
+                onValueChange={field.onChange}
+                disabled={isLoading}
+              >
+                <SelectTrigger
+                  id="account-currency"
+                  className="w-full"
+                  aria-invalid={!!(errors as Record<string, { message?: string }>).currency}
+                >
+                  <SelectValue placeholder={t('common.select')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((currency) => (
+                    <SelectItem key={currency} value={currency}>
+                      {t(`accounts.currencies.${currency}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
           {(errors as Record<string, { message?: string }>).currency && (
             <span className="text-xs text-destructive">{t('common.required')}</span>
           )}
@@ -175,12 +181,20 @@ export function AccountForm({
             id="account-initial-balance"
             type="text"
             inputMode="decimal"
-            placeholder="0"
+            placeholder={t('accounts.initialBalancePlaceholder')}
             disabled={isLoading}
+            aria-invalid={
+              !!(errors as Record<string, { message?: string; type?: string }>).initialBalance
+            }
             {...register('initialBalance' as keyof (CreateAccountInput | UpdateAccountInput))}
           />
-          {(errors as Record<string, { message?: string }>).initialBalance && (
-            <span className="text-xs text-destructive">{t('common.required')}</span>
+          {(errors as Record<string, { message?: string; type?: string }>).initialBalance && (
+            <span className="text-xs text-destructive">
+              {(errors as Record<string, { type?: string }>).initialBalance?.type ===
+              'invalid_string'
+                ? t('accounts.invalidBalance')
+                : t('common.required')}
+            </span>
           )}
         </div>
       )}

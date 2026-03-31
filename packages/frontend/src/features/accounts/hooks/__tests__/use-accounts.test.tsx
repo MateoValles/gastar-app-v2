@@ -36,9 +36,11 @@ function createWrapper() {
     },
   });
 
-  return function Wrapper({ children }: { children: ReactNode }) {
+  function Wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
-  };
+  }
+
+  return { wrapper: Wrapper, queryClient };
 }
 
 const mockAccount = {
@@ -63,7 +65,8 @@ describe('useAccounts', () => {
     it('returns accounts on successful fetch', async () => {
       vi.mocked(accountsService.getAccounts).mockResolvedValue([mockAccount]);
 
-      const { result } = renderHook(() => useAccounts(), { wrapper: createWrapper() });
+      const { wrapper } = createWrapper();
+      const { result } = renderHook(() => useAccounts(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.accounts.isSuccess).toBe(true);
@@ -78,7 +81,10 @@ describe('useAccounts', () => {
       vi.mocked(accountsService.getAccounts).mockResolvedValue([mockAccount]);
       vi.mocked(accountsService.createAccount).mockResolvedValue(mockAccount);
 
-      const { result } = renderHook(() => useAccounts(), { wrapper: createWrapper() });
+      const { wrapper, queryClient } = createWrapper();
+      const invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+      const { result } = renderHook(() => useAccounts(), { wrapper });
 
       await waitFor(() => expect(result.current.accounts.isSuccess).toBe(true));
 
@@ -95,18 +101,23 @@ describe('useAccounts', () => {
       });
 
       expect(toast.success).toHaveBeenCalled();
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['accounts'] });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['dashboard'] });
     });
   });
 
   describe('updateAccount', () => {
-    it('shows success toast on update', async () => {
+    it('shows success toast and invalidates queries on update', async () => {
       vi.mocked(accountsService.getAccounts).mockResolvedValue([mockAccount]);
       vi.mocked(accountsService.updateAccount).mockResolvedValue({
         ...mockAccount,
         name: 'Updated Name',
       });
 
-      const { result } = renderHook(() => useAccounts(), { wrapper: createWrapper() });
+      const { wrapper, queryClient } = createWrapper();
+      const invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+      const { result } = renderHook(() => useAccounts(), { wrapper });
 
       await waitFor(() => expect(result.current.accounts.isSuccess).toBe(true));
 
@@ -119,15 +130,20 @@ describe('useAccounts', () => {
       });
 
       expect(toast.success).toHaveBeenCalled();
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['accounts'] });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['dashboard'] });
     });
   });
 
   describe('deleteAccount', () => {
-    it('shows success toast on delete', async () => {
+    it('shows success toast and invalidates queries on delete', async () => {
       vi.mocked(accountsService.getAccounts).mockResolvedValue([mockAccount]);
       vi.mocked(accountsService.deleteAccount).mockResolvedValue(undefined);
 
-      const { result } = renderHook(() => useAccounts(), { wrapper: createWrapper() });
+      const { wrapper, queryClient } = createWrapper();
+      const invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+      const { result } = renderHook(() => useAccounts(), { wrapper });
 
       await waitFor(() => expect(result.current.accounts.isSuccess).toBe(true));
 
@@ -140,6 +156,8 @@ describe('useAccounts', () => {
       });
 
       expect(toast.success).toHaveBeenCalled();
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['accounts'] });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({ queryKey: ['dashboard'] });
     });
 
     it('shows warning toast on 409 delete error', async () => {
@@ -148,7 +166,8 @@ describe('useAccounts', () => {
         new Error('Account has transactions'),
       );
 
-      const { result } = renderHook(() => useAccounts(), { wrapper: createWrapper() });
+      const { wrapper } = createWrapper();
+      const { result } = renderHook(() => useAccounts(), { wrapper });
 
       await waitFor(() => expect(result.current.accounts.isSuccess).toBe(true));
 

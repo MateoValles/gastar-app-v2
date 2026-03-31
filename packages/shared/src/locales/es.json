@@ -119,6 +119,8 @@
       "investment": "Inversión"
     },
     "namePlaceholder": "Ej: Banco Galicia, Efectivo",
+    "invalidBalance": "Ingresa un monto válido (ej: 1000 o 1000.50)",
+    "initialBalancePlaceholder": "0",
     "currencies": {
       "ARS": "Peso argentino (ARS)",
       "USD": "Dólar estadounidense (USD)",

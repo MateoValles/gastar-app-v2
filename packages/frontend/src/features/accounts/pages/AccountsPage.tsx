@@ -89,7 +89,7 @@ export default function AccountsPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('accounts.title')}</h1>
-        <Button onClick={handleCreateClick} className="hidden md:flex">
+        <Button onClick={handleCreateClick} className="flex">
           <Plus className="size-4" />
           {t('accounts.newAccount')}
         </Button>

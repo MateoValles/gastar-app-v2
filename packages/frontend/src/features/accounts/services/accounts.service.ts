@@ -4,17 +4,17 @@ import type { AccountResponse, CreateAccountInput, UpdateAccountInput } from '@g
 
 export async function getAccounts(): Promise<AccountResponse[]> {
   const response = await get<ApiResponse<AccountResponse[]>>('/accounts');
-  return response.data!;
+  return response.data;
 }
 
 export async function getAccount(id: string): Promise<AccountResponse> {
   const response = await get<ApiResponse<AccountResponse>>(`/accounts/${id}`);
-  return response.data!;
+  return response.data;
 }
 
 export async function createAccount(data: CreateAccountInput): Promise<AccountResponse> {
   const response = await post<ApiResponse<AccountResponse>>('/accounts', data);
-  return response.data!;
+  return response.data;
 }
 
 export async function updateAccount(
@@ -22,7 +22,7 @@ export async function updateAccount(
   data: UpdateAccountInput,
 ): Promise<AccountResponse> {
   const response = await patch<ApiResponse<AccountResponse>>(`/accounts/${id}`, data);
-  return response.data!;
+  return response.data;
 }
 
 export async function deleteAccount(id: string): Promise<void> {
