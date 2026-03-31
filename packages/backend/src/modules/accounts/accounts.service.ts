@@ -157,7 +157,25 @@ export async function deleteAccount(userId: string, accountId: string): Promise<
 
   // 3. Delete (safe — no transactions exist).
   //    Use deleteMany with compound where for defense-in-depth ownership enforcement.
-  await prisma.account.deleteMany({
-    where: { id: accountId, userId },
-  });
+  //    Check count to detect race condition where account is deleted between checks.
+  //    Catch P2003 FK violation in case a transaction is created between count and delete.
+  try {
+    const { count } = await prisma.account.deleteMany({
+      where: { id: accountId, userId },
+    });
+
+    if (count === 0) {
+      throw new NotFoundError('Account not found');
+    }
+  } catch (error) {
+    if (error instanceof NotFoundError || error instanceof ConflictError) {
+      throw error;
+    }
+    if (error && typeof error === 'object' && 'code' in error && (error as any).code === 'P2003') {
+      throw new ConflictError(
+        'Cannot delete account with existing transactions. Delete or reassign transactions first.',
+      );
+    }
+    throw error;
+  }
 }

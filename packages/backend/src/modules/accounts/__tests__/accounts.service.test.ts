@@ -681,4 +681,24 @@ describe('deleteAccount', () => {
     expect(mockPrisma.transaction.count).not.toHaveBeenCalled();
     expect(mockPrisma.account.deleteMany).not.toHaveBeenCalled();
   });
+
+  it('throws NotFoundError when deleteMany returns count=0 (race: account deleted between checks)', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(0);
+    mockPrisma.account.deleteMany.mockResolvedValue({ count: 0 });
+
+    await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow(NotFoundError);
+    await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow('Account not found');
+  });
+
+  it('throws ConflictError when deleteMany hits P2003 FK violation (race: transaction created between count and delete)', async () => {
+    mockPrisma.account.findFirst.mockResolvedValue(prismaAccount);
+    mockPrisma.transaction.count.mockResolvedValue(0);
+    mockPrisma.account.deleteMany.mockRejectedValue({ code: 'P2003' });
+
+    await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow(ConflictError);
+    await expect(deleteAccount(USER_ID, ACCOUNT_ID)).rejects.toThrow(
+      'Cannot delete account with existing transactions',
+    );
+  });
 });
