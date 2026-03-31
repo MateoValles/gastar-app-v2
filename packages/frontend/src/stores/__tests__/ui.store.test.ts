@@ -89,7 +89,7 @@ describe('useUIStore', () => {
 
     it('sets up system theme listener when theme is system', () => {
       const addEventListenerMock = vi.fn();
-      mockMatchMedia.mockReturnValueOnce({
+      mockMatchMedia.mockReturnValue({
         matches: false,
         addEventListener: addEventListenerMock,
         removeEventListener: vi.fn(),
