@@ -11,7 +11,7 @@
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcrypt';
 import type { Account, Category, Transaction, User } from '@prisma/client';
-import type { AccountType, Currency, TransactionType } from '@prisma/client';
+import type { AccountType, Currency } from '@prisma/client';
 import { authConfig } from '@/config/auth.js';
 import { signAccessToken } from '@/modules/auth/auth.service.js';
 import { prisma } from '@/lib/prisma.js';
@@ -156,24 +156,24 @@ export async function createCategory(
  * Note: For transfer transactions, use createTransfer() instead.
  *
  * @param accountId  - The account the transaction belongs to
- * @param categoryId - The category (nullable — pass null for transfers)
+ * @param categoryId - The category (nullable)
  * @param overrides  - Optional partial overrides for transaction fields
  */
 export async function createTransaction(
   accountId: string,
   categoryId: string | null,
   overrides?: Partial<{
-    type: TransactionType;
+    type: 'income' | 'expense';
     amount: number;
     description: string;
     date: string;
   }>,
 ): Promise<Transaction> {
-  const type = overrides?.type ?? 'expense';
+  const type: 'income' | 'expense' = overrides?.type ?? 'expense';
   const amount = overrides?.amount ?? 100.0;
   const date = overrides?.date ?? new Date().toISOString().substring(0, 10);
 
-  // Determine balance delta: income/transfer-in = +, expense/transfer-out = -
+  // Determine balance delta: income = +, expense = -
   const balanceDelta = type === 'income' ? amount : -amount;
 
   return prisma.$transaction(async (tx) => {

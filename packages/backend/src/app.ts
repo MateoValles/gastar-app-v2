@@ -15,7 +15,7 @@ import dashboardRoutes from '@/modules/dashboard/dashboard.routes.js';
 
 // ── App Options ───────────────────────────────────────────────────────────────
 
-interface AppOptions {
+export interface AppOptions {
   /**
    * When true, auth rate limiter is not applied.
    * Used in integration tests to avoid 429 errors during rapid sequential requests.

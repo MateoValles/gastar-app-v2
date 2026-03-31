@@ -19,6 +19,22 @@ export async function setup(): Promise<void> {
   // Load .env.test so DATABASE_URL is available for prisma db push
   config({ path: resolve(__dirname, '../../.env.test') });
 
+  // Safety guard — prevent accidental data loss if .env.test is misconfigured
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error(
+      `global-setup: NODE_ENV must be "test" but got "${process.env.NODE_ENV}". ` +
+        'Refusing to run --force-reset against a non-test environment.',
+    );
+  }
+
+  const dbUrl = process.env.DATABASE_URL ?? '';
+  if (!dbUrl.includes('_test')) {
+    throw new Error(
+      'global-setup: DATABASE_URL does not contain "_test". ' +
+        `Refusing to run --force-reset against "${dbUrl}" — this may not be a test database.`,
+    );
+  }
+
   console.log('\n🗄️  Resetting test database schema...');
 
   // Reset test database schema — drops all tables, recreates from schema.prisma.
