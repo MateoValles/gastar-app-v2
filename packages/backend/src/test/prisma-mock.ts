@@ -40,17 +40,31 @@ let _instance: MockPrismaClient;
 export function createMockPrisma(): MockPrismaClient {
   const handler: ProxyHandler<Record<string, unknown>> = {
     get(target, prop: string) {
-      // $transaction is a top-level method, not a model
+      // $transaction is a top-level method, not a model.
+      // Default implementation supports both Prisma overloads:
+      // - Callback form: prisma.$transaction(async (tx) => { ... })
+      // - Array form: prisma.$transaction([promise1, promise2, ...])
       if (prop === '$transaction') {
         if (!target[prop]) {
-          target[prop] = vi.fn();
+          target[prop] = vi.fn((arg: unknown, ...rest: unknown[]) => {
+            if (typeof arg === 'function') {
+              return (arg as (tx: MockPrismaClient, ...args: unknown[]) => unknown)(
+                _instance,
+                ...rest,
+              );
+            }
+            if (Array.isArray(arg)) {
+              return Promise.all(arg as unknown[]);
+            }
+            return Promise.resolve(arg);
+          });
         }
         return target[prop];
       }
 
       // For model names (account, transaction, etc.), return a nested proxy
       if (!target[prop]) {
-        target[prop] = new Proxy({} as Record<string, unknown>, {
+        target[prop] = new Proxy(Object.create(null) as Record<string, unknown>, {
           get(modelTarget, method: string) {
             if (!modelTarget[method]) {
               modelTarget[method] = vi.fn();
@@ -63,7 +77,10 @@ export function createMockPrisma(): MockPrismaClient {
     },
   };
 
-  _instance = new Proxy({} as Record<string, unknown>, handler) as unknown as MockPrismaClient;
+  _instance = new Proxy(
+    Object.create(null) as Record<string, unknown>,
+    handler,
+  ) as unknown as MockPrismaClient;
   return _instance;
 }
 
