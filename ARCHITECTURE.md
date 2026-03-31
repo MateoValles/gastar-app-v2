@@ -69,17 +69,17 @@
 
 ### Backend Libraries
 
-| Library             | Purpose                                  |
-| ------------------- | ---------------------------------------- |
-| Prisma Client       | Database queries                         |
-| Zod                 | Request validation (shared schemas)      |
-| jsonwebtoken (jose) | JWT token generation & verification      |
-| bcrypt              | Password hashing                         |
-| Passport.js         | Authentication strategies (Google OAuth) |
-| Resend              | Transactional emails (password reset)    |
-| helmet              | Security headers                         |
-| cors                | CORS configuration                       |
-| express-rate-limit  | Rate limiting                            |
+| Library             | Purpose                                                  |
+| ------------------- | -------------------------------------------------------- |
+| Prisma Client       | Database queries                                         |
+| Zod                 | Request validation (shared schemas)                      |
+| jsonwebtoken (jose) | JWT token generation & verification                      |
+| bcrypt              | Password hashing                                         |
+| Passport.js         | Planned: Google OAuth authentication (not yet implemented) |
+| Resend              | Transactional emails (password reset)                    |
+| helmet              | Security headers                                         |
+| cors                | CORS configuration                                       |
+| express-rate-limit  | Rate limiting                                            |
 
 ### DevOps & Tooling
 
