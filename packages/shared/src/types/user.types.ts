@@ -3,4 +3,5 @@ export interface UserProfile {
   email: string;
   name: string;
   language: string;
+  createdAt: string;
 }
