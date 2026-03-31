@@ -83,7 +83,7 @@ gastar-app-v2/
 
 | Module       | Status  | PR                                                          | Endpoints                                                                                       |
 | ------------ | ------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Auth         | ✅ Done | [#3](https://github.com/MateoValles/gastar-app-v2/pull/3)   | 8 endpoints (register, login, refresh, logout, Google OAuth, password reset)                    |
+| Auth         | ✅ Done | [#3](https://github.com/MateoValles/gastar-app-v2/pull/3)   | Email/password auth (register, login), refresh, logout, password reset; Google OAuth planned   |
 | Accounts     | ✅ Done | [#5](https://github.com/MateoValles/gastar-app-v2/pull/5)   | Full CRUD with ownership enforcement                                                            |
 | Categories   | ✅ Done | [#6](https://github.com/MateoValles/gastar-app-v2/pull/6)   | Full CRUD with pre-flight delete checks                                                         |
 | Transactions | ✅ Done | [#7](https://github.com/MateoValles/gastar-app-v2/pull/7)   | Full CRUD, 2-record transfers, atomic balance updates, pagination + filtering                   |
