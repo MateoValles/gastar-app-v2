@@ -1,9 +1,5 @@
 import type { Account as PrismaAccount } from '@prisma/client';
-import type {
-  AccountResponse,
-  CreateAccountInput,
-  UpdateAccountInput,
-} from '@gastar/shared';
+import type { AccountResponse, CreateAccountInput, UpdateAccountInput } from '@gastar/shared';
 import { prisma } from '@/lib/prisma.js';
 import { NotFoundError } from '@/lib/errors.js';
 
@@ -33,7 +29,7 @@ export function toAccountResponse(account: PrismaAccount): AccountResponse {
     name: account.name,
     type: account.type as AccountResponse['type'],
     currency: account.currency as AccountResponse['currency'],
-    balance: account.balance.toString(), // Decimal → string, NEVER float
+    balance: account.balance.toFixed(2), // Decimal → string with 2 decimal places, NEVER float
     createdAt: account.createdAt.toISOString(),
     updatedAt: account.updatedAt.toISOString(),
   };
@@ -59,10 +55,7 @@ export async function listAccounts(userId: string): Promise<AccountResponse[]> {
  * Returns a single account by ID, scoped to `userId`.
  * Throws `NotFoundError` if the account does not exist or is not owned by the user.
  */
-export async function getAccount(
-  userId: string,
-  accountId: string,
-): Promise<AccountResponse> {
+export async function getAccount(userId: string, accountId: string): Promise<AccountResponse> {
   const account = await prisma.account.findFirst({
     where: { id: accountId, userId },
   });
@@ -137,10 +130,7 @@ export async function updateAccount(
  * Prisma `onDelete: Cascade` on transactions handles cleanup automatically.
  * Throws `NotFoundError` if the account does not exist or is not owned by the user.
  */
-export async function deleteAccount(
-  userId: string,
-  accountId: string,
-): Promise<void> {
+export async function deleteAccount(userId: string, accountId: string): Promise<void> {
   // Use deleteMany with compound where to enforce ownership in a single query.
   // Returns count=0 if not found or not owned → throw NotFoundError.
   const { count } = await prisma.account.deleteMany({

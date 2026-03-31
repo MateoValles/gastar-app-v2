@@ -34,21 +34,23 @@ import { NotFoundError, ValidationError } from '@/lib/errors.js';
 /**
  * Converts a Prisma Transaction row to the API response shape.
  *
- * - Decimal fields (`amount`, `exchangeRate`) → strings via `.toString()`
+ * - `amount` → string via `.toFixed(2)` (preserves trailing zeros, e.g. "100.50")
+ * - `exchangeRate` → string via `.toFixed(6)` (6 decimal precision for rates)
  * - `date` (Date @db.Date) → YYYY-MM-DD via `.toISOString().slice(0, 10)`
  * - `createdAt` / `updatedAt` → ISO 8601 via `.toISOString()`
  * - All nullable fields are passed through as-is.
+ *
+ * NOTE: `.toString()` is intentionally avoided — it strips trailing zeros
+ * (e.g. new Decimal('100.50').toString() === '100.5'). toFixed() is correct.
  */
-export function toTransactionResponse(
-  tx: PrismaTransaction,
-): TransactionResponse {
+export function toTransactionResponse(tx: PrismaTransaction): TransactionResponse {
   return {
     id: tx.id,
     accountId: tx.accountId,
     categoryId: tx.categoryId,
     type: tx.type as TransactionType,
-    amount: tx.amount.toString(), // Decimal → string, NEVER float
-    exchangeRate: tx.exchangeRate?.toString() ?? null,
+    amount: tx.amount.toFixed(2), // Decimal → string with 2dp, NEVER float
+    exchangeRate: tx.exchangeRate?.toFixed(6) ?? null, // 6dp for exchange rates
     description: tx.description,
     date: tx.date.toISOString().slice(0, 10), // YYYY-MM-DD (no time)
     transferGroupId: tx.transferGroupId,
@@ -100,8 +102,7 @@ export async function listTransactions(
   data: TransactionResponse[];
   meta: { page: number; limit: number; total: number };
 }> {
-  const { accountId, categoryId, type, dateFrom, dateTo, sortBy, sortOrder, page, limit } =
-    query;
+  const { accountId, categoryId, type, dateFrom, dateTo, sortBy, sortOrder, page, limit } = query;
 
   const where = {
     account: { userId },
@@ -142,10 +143,7 @@ export async function listTransactions(
  * Returns a single transaction by ID, verifying ownership via account.userId.
  * Throws `NotFoundError` if the transaction doesn't exist or is inaccessible.
  */
-export async function getTransaction(
-  userId: string,
-  txId: string,
-): Promise<TransactionResponse> {
+export async function getTransaction(userId: string, txId: string): Promise<TransactionResponse> {
   const tx = await prisma.transaction.findFirst({
     where: { id: txId, account: { userId } },
   });
@@ -257,15 +255,8 @@ async function createTransfer(
   userId: string,
   data: Extract<CreateTransactionInput, { type: 'transfer' }>,
 ): Promise<TransactionResponse[]> {
-  const {
-    fromAccountId,
-    toAccountId,
-    fromAmount,
-    toAmount,
-    exchangeRate,
-    description,
-    date,
-  } = data;
+  const { fromAccountId, toAccountId, fromAmount, toAmount, exchangeRate, description, date } =
+    data;
 
   // 1. Verify ownership of both accounts
   const [srcAccount, dstAccount] = await Promise.all([
@@ -288,17 +279,11 @@ async function createTransfer(
   }
 
   if (!isCrossCurrency && exchangeRate) {
-    throw new ValidationError(
-      'Exchange rate must not be provided for same-currency transfers',
-      [],
-    );
+    throw new ValidationError('Exchange rate must not be provided for same-currency transfers', []);
   }
 
   if (!isCrossCurrency && fromAmount !== toAmount) {
-    throw new ValidationError(
-      'toAmount must equal fromAmount for same-currency transfers',
-      [],
-    );
+    throw new ValidationError('toAmount must equal fromAmount for same-currency transfers', []);
   }
 
   const decimalFromAmount = new Decimal(fromAmount);
@@ -497,21 +482,27 @@ async function updateTransfer(
     }
 
     const isCrossCurrency = srcAccount.currency !== dstAccount.currency;
-    const effectiveRate = data.exchangeRate !== undefined ? data.exchangeRate : (outTx.exchangeRate?.toString() ?? undefined);
+    const effectiveRate =
+      data.exchangeRate !== undefined
+        ? data.exchangeRate
+        : (outTx.exchangeRate?.toString() ?? undefined);
 
     if (isCrossCurrency && !effectiveRate) {
       throw new ValidationError('Exchange rate is required for cross-currency transfers', []);
     }
 
     if (!isCrossCurrency && effectiveRate) {
-      throw new ValidationError('Exchange rate must not be provided for same-currency transfers', []);
+      throw new ValidationError(
+        'Exchange rate must not be provided for same-currency transfers',
+        [],
+      );
     }
 
     // For same-currency: if either amount changes, both must stay equal
     if (!isCrossCurrency) {
       const effectiveOutAmount = data.amount ?? outTx.amount.toString();
       const effectiveInAmount = data.toAmount ?? inTx.amount.toString();
-      if (effectiveOutAmount !== effectiveInAmount) {
+      if (new Decimal(effectiveOutAmount).comparedTo(new Decimal(effectiveInAmount)) !== 0) {
         throw new ValidationError('toAmount must equal amount for same-currency transfers', []);
       }
     }
@@ -519,7 +510,7 @@ async function updateTransfer(
 
   // Compute old balance effects
   const oldOutDelta = getBalanceDelta('transfer', 'out', outTx.amount); // negative
-  const oldInDelta = getBalanceDelta('transfer', 'in', inTx.amount);   // positive
+  const oldInDelta = getBalanceDelta('transfer', 'in', inTx.amount); // positive
 
   // New amounts (fall back to existing if not provided)
   const newOutAmount = data.amount ? new Decimal(data.amount) : outTx.amount;
@@ -535,7 +526,7 @@ async function updateTransfer(
 
   // New balance effects
   const newOutDelta = getBalanceDelta('transfer', 'out', newOutAmount); // negative
-  const newInDelta = getBalanceDelta('transfer', 'in', newInAmount);   // positive
+  const newInDelta = getBalanceDelta('transfer', 'in', newInAmount); // positive
 
   // Net deltas: reverse old + apply new
   const netSrcDelta = newOutDelta.minus(oldOutDelta);
@@ -609,9 +600,7 @@ export async function deleteTransaction(
 /**
  * Deletes a single income or expense transaction and reverses its balance effect.
  */
-async function deleteIncomeExpense(
-  tx: PrismaTransaction,
-): Promise<TransactionResponse> {
+async function deleteIncomeExpense(tx: PrismaTransaction): Promise<TransactionResponse> {
   const type = tx.type as TransactionType;
   const delta = getBalanceDelta(type, null, tx.amount);
   // Reverse: negate the delta
@@ -655,7 +644,7 @@ async function deleteTransfer(
 
   // Reverse old balance effects
   const outDelta = getBalanceDelta('transfer', 'out', outTx.amount); // negative
-  const inDelta = getBalanceDelta('transfer', 'in', inTx.amount);   // positive
+  const inDelta = getBalanceDelta('transfer', 'in', inTx.amount); // positive
 
   await prisma.$transaction([
     prisma.transaction.delete({ where: { id: outTx.id } }),
