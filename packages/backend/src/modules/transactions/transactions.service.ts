@@ -282,7 +282,7 @@ async function createTransfer(
     throw new ValidationError('Exchange rate must not be provided for same-currency transfers', []);
   }
 
-  if (!isCrossCurrency && fromAmount !== toAmount) {
+  if (!isCrossCurrency && new Decimal(fromAmount).comparedTo(new Decimal(toAmount)) !== 0) {
     throw new ValidationError('toAmount must equal fromAmount for same-currency transfers', []);
   }
 
