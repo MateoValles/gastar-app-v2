@@ -1,5 +1,6 @@
 {
   "common": {
+    "appName": "Gastar",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -56,7 +57,9 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "toggleSidebar": "Toggle sidebar",
+    "openMenu": "Open menu"
   },
   "auth": {
     "login": "Sign in",

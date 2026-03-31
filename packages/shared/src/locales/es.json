@@ -1,5 +1,6 @@
 {
   "common": {
+    "appName": "Gastar",
     "save": "Guardar",
     "cancel": "Cancelar",
     "delete": "Eliminar",
@@ -56,7 +57,9 @@
     "light": "Claro",
     "dark": "Oscuro",
     "system": "Sistema",
-    "unknown": "Desconocido"
+    "unknown": "Desconocido",
+    "toggleSidebar": "Alternar barra lateral",
+    "openMenu": "Abrir menú"
   },
   "auth": {
     "login": "Iniciar sesión",
