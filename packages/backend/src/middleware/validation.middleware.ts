@@ -51,15 +51,24 @@ export function validateQuery(schema: ZodSchema): RequestHandler {
     const result = schema.safeParse(req.query);
 
     if (!result.success) {
-      throw new ValidationError(
-        'Invalid query parameters',
-        result.error.issues,
-      );
+      throw new ValidationError('Invalid query parameters', result.error.issues);
     }
 
-    // Replace req.query with the clean, parsed output (coerces strings to
-    // numbers, applies defaults — whatever the schema defines).
-    req.query = result.data as Record<string, string>;
+    // Shadow the `query` getter on this specific request instance.
+    // Express 5 / Node IncomingMessage defines `query` as a prototype-level
+    // getter that re-parses the query string on every access — mutating the
+    // returned object (Object.assign / delete) has no effect because the next
+    // access returns a freshly parsed object again.
+    // By defining an own property on `req`, we override the prototype getter
+    // for the lifetime of this request, so every subsequent `req.query` access
+    // returns the Zod-parsed (coerced, defaulted, stripped) data.
+    const parsedData = result.data as Record<string, unknown>;
+    Object.defineProperty(req, 'query', {
+      value: parsedData,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
     next();
   };
 }
