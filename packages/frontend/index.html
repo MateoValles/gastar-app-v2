@@ -3,7 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Gastar — Personal Finance Tracker" />
+    <meta name="theme-color" content="#D97706" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1C1917" media="(prefers-color-scheme: dark)" />
     <title>Gastar</title>
+    <!-- FOUC prevention: apply theme before React loads -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme =
+            stored === 'dark' || stored === 'light' || stored === 'system' ? stored : 'system';
+          if (
+            theme === 'dark' ||
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          ) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          // localStorage might be unavailable in some contexts
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
