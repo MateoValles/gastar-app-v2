@@ -34,14 +34,14 @@ Gastar is a personal finance application for tracking accounts, categories, and 
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Database | PostgreSQL 16 + Prisma ORM |
-| Backend | Node.js 22 LTS, Express 5 |
-| Frontend | React 19, Vite, Tailwind 4 |
-| Language | TypeScript 5.x everywhere |
-| Monorepo | pnpm workspaces |
-| Testing | Vitest, React Testing Library, Playwright |
+| Layer    | Technology                                |
+| -------- | ----------------------------------------- |
+| Database | PostgreSQL 16 + Prisma ORM                |
+| Backend  | Node.js 22 LTS, Express 5                 |
+| Frontend | React 19, Vite, Tailwind 4                |
+| Language | TypeScript 5.x everywhere                 |
+| Monorepo | pnpm workspaces                           |
+| Testing  | Vitest, React Testing Library, Playwright |
 
 ---
 
@@ -68,12 +68,12 @@ gastar-app-v2/
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Single source of truth — tech stack, patterns, database schema, API design, feature scope |
-| [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Visual identity — colors, typography, components, layouts, toasts |
-| [`COMMIT_RULES.md`](./COMMIT_RULES.md) | Git conventions — conventional commits, branch naming, PR rules |
-| [`AGENTS.md`](./AGENTS.md) | AI agent instructions — project context for automated assistants |
+| Document                                 | Description                                                                               |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md)   | Single source of truth — tech stack, patterns, database schema, API design, feature scope |
+| [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Visual identity — colors, typography, components, layouts, toasts                         |
+| [`COMMIT_RULES.md`](./COMMIT_RULES.md)   | Git conventions — conventional commits, branch naming, PR rules                           |
+| [`AGENTS.md`](./AGENTS.md)               | AI agent instructions — project context for automated assistants                          |
 
 ---
 
@@ -81,19 +81,28 @@ gastar-app-v2/
 
 ### Backend API (`/v1`)
 
-| Module | Status | PR | Endpoints |
-|--------|--------|----|-----------|
-| Auth | ✅ Done | [#3](https://github.com/MateoValles/gastar-app-v2/pull/3) | 8 endpoints (register, login, refresh, logout, Google OAuth, password reset) |
-| Accounts | ✅ Done | [#5](https://github.com/MateoValles/gastar-app-v2/pull/5) | Full CRUD with ownership enforcement |
-| Categories | ✅ Done | [#6](https://github.com/MateoValles/gastar-app-v2/pull/6) | Full CRUD with pre-flight delete checks |
-| Transactions | ✅ Done | [#7](https://github.com/MateoValles/gastar-app-v2/pull/7) | Full CRUD, 2-record transfers, atomic balance updates, pagination + filtering |
-| Users | ✅ Done | [#8](https://github.com/MateoValles/gastar-app-v2/pull/8) | GET/PATCH profile with settings |
-| Dashboard | 🔲 Pending | — | Summary endpoint |
+| Module       | Status  | PR                                                          | Endpoints                                                                                       |
+| ------------ | ------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Auth         | ✅ Done | [#3](https://github.com/MateoValles/gastar-app-v2/pull/3)   | Email/password auth (register, login), refresh, logout, password reset; Google OAuth planned   |
+| Accounts     | ✅ Done | [#5](https://github.com/MateoValles/gastar-app-v2/pull/5)   | Full CRUD with ownership enforcement                                                            |
+| Categories   | ✅ Done | [#6](https://github.com/MateoValles/gastar-app-v2/pull/6)   | Full CRUD with pre-flight delete checks                                                         |
+| Transactions | ✅ Done | [#7](https://github.com/MateoValles/gastar-app-v2/pull/7)   | Full CRUD, 2-record transfers, atomic balance updates, pagination + filtering                   |
+| Users        | ✅ Done | [#8](https://github.com/MateoValles/gastar-app-v2/pull/8)   | GET/PATCH profile with settings                                                                 |
+| Dashboard    | ✅ Done | [#11](https://github.com/MateoValles/gastar-app-v2/pull/11) | Summary endpoint with currency groups, account cards, expenses by category, recent transactions |
+
+### Backend Tests
+
+| Type              | Count | PR                                                          | Notes                           |
+| ----------------- | ----- | ----------------------------------------------------------- | ------------------------------- |
+| Unit tests        | 321   | [#14](https://github.com/MateoValles/gastar-app-v2/pull/14) | Services — all 6 modules        |
+| Integration tests | 92    | [#15](https://github.com/MateoValles/gastar-app-v2/pull/15) | Real PostgreSQL — all 6 modules |
 
 ### Frontend
+
 Not started yet.
 
 ### Infrastructure
+
 Not started yet.
 
 ---

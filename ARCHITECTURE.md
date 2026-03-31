@@ -42,58 +42,58 @@
 
 ### Core (PERN Stack)
 
-| Layer      | Technology       | Version  | Purpose                          |
-| ---------- | ---------------- | -------- | -------------------------------- |
-| Database   | PostgreSQL       | 16+      | Primary data store               |
-| ORM        | Prisma           | Latest   | Type-safe database access        |
-| Backend    | Node.js          | 22 LTS   | Runtime                          |
-| Framework  | Express.js       | 5.x      | HTTP server & routing            |
-| Frontend   | React            | 19.x     | UI library                       |
-| Bundler    | Vite             | Latest   | Frontend build tool              |
-| Language   | TypeScript       | 5.x      | Across the entire monorepo       |
+| Layer     | Technology | Version | Purpose                    |
+| --------- | ---------- | ------- | -------------------------- |
+| Database  | PostgreSQL | 16+     | Primary data store         |
+| ORM       | Prisma     | Latest  | Type-safe database access  |
+| Backend   | Node.js    | 22 LTS  | Runtime                    |
+| Framework | Express.js | 5.x     | HTTP server & routing      |
+| Frontend  | React      | 19.x    | UI library                 |
+| Bundler   | Vite       | Latest  | Frontend build tool        |
+| Language  | TypeScript | 5.x     | Across the entire monorepo |
 
 ### Frontend Libraries
 
-| Library              | Purpose                                    |
-| -------------------- | ------------------------------------------ |
-| Shadcn/ui            | Component library (built on Radix UI)      |
-| Tailwind CSS 4       | Utility-first styling                      |
-| React Router         | Client-side routing                        |
-| TanStack React Query | Server state management (cache, sync)      |
-| Zustand              | Client state (UI state, filters, modals)   |
-| React Hook Form      | Form management                            |
-| Zod                  | Schema validation (shared with backend)    |
-| Recharts             | Charts and data visualization              |
-| react-i18next        | Internationalization (Spanish + English)   |
-| Lucide React         | Icon library (pairs with Shadcn)           |
+| Library              | Purpose                                  |
+| -------------------- | ---------------------------------------- |
+| Shadcn/ui            | Component library (built on Radix UI)    |
+| Tailwind CSS 4       | Utility-first styling                    |
+| React Router         | Client-side routing                      |
+| TanStack React Query | Server state management (cache, sync)    |
+| Zustand              | Client state (UI state, filters, modals) |
+| React Hook Form      | Form management                          |
+| Zod                  | Schema validation (shared with backend)  |
+| Recharts             | Charts and data visualization            |
+| react-i18next        | Internationalization (Spanish + English) |
+| Lucide React         | Icon library (pairs with Shadcn)         |
 
 ### Backend Libraries
 
-| Library              | Purpose                                    |
-| -------------------- | ------------------------------------------ |
-| Prisma Client        | Database queries                           |
-| Zod                  | Request validation (shared schemas)        |
-| jsonwebtoken (jose)  | JWT token generation & verification        |
-| bcrypt               | Password hashing                           |
-| Passport.js          | Authentication strategies (Google OAuth)   |
-| Resend               | Transactional emails (password reset)      |
-| helmet               | Security headers                           |
-| cors                 | CORS configuration                         |
-| express-rate-limit   | Rate limiting                              |
+| Library             | Purpose                                                  |
+| ------------------- | -------------------------------------------------------- |
+| Prisma Client       | Database queries                                         |
+| Zod                 | Request validation (shared schemas)                      |
+| jsonwebtoken (jose) | JWT token generation & verification                      |
+| bcrypt              | Password hashing                                         |
+| Passport.js         | Planned: Google OAuth authentication (not yet implemented) |
+| Resend              | Transactional emails (password reset)                    |
+| helmet              | Security headers                                         |
+| cors                | CORS configuration                                       |
+| express-rate-limit  | Rate limiting                                            |
 
 ### DevOps & Tooling
 
-| Tool                 | Purpose                                    |
-| -------------------- | ------------------------------------------ |
-| pnpm                 | Package manager + workspace management     |
-| Docker               | Containerization (Dokploy deployment)      |
-| Vitest               | Unit & integration testing                 |
-| React Testing Lib    | Component testing                          |
-| Playwright           | End-to-end testing                         |
-| ESLint               | Linting                                    |
-| Prettier             | Code formatting                            |
-| GGA (Gentleman Guardian Angel) | AI-powered pre-commit code review    |
-| GitHub Copilot Code Review | Automated PR code review (GitHub ruleset) |
+| Tool                           | Purpose                                   |
+| ------------------------------ | ----------------------------------------- |
+| pnpm                           | Package manager + workspace management    |
+| Docker                         | Containerization (Dokploy deployment)     |
+| Vitest                         | Unit & integration testing                |
+| React Testing Lib              | Component testing                         |
+| Playwright                     | End-to-end testing                        |
+| ESLint                         | Linting                                   |
+| Prettier                       | Code formatting                           |
+| GGA (Gentleman Guardian Angel) | AI-powered pre-commit code review         |
+| GitHub Copilot Code Review     | Automated PR code review (GitHub ruleset) |
 
 ---
 
@@ -151,9 +151,6 @@ gastar-app-v2/
 │   │       │   │   ├── auth.controller.ts
 │   │       │   │   ├── auth.service.ts
 │   │       │   │   ├── auth.routes.ts
-│   │       │   │   ├── strategies/
-│   │       │   │   │   ├── jwt.strategy.ts
-│   │       │   │   │   └── google.strategy.ts
 │   │       │   │   └── __tests__/
 │   │       │   ├── accounts/
 │   │       │   │   ├── accounts.controller.ts
@@ -170,10 +167,15 @@ gastar-app-v2/
 │   │       │   │   ├── transactions.service.ts
 │   │       │   │   ├── transactions.routes.ts
 │   │       │   │   └── __tests__/
-│   │       │   └── users/
-│   │       │       ├── users.controller.ts
-│   │       │       ├── users.service.ts
-│   │       │       ├── users.routes.ts
+│   │       │   ├── users/
+│   │       │   │   ├── users.controller.ts
+│   │       │   │   ├── users.service.ts
+│   │       │   │   ├── users.routes.ts
+│   │       │   │   └── __tests__/
+│   │       │   └── dashboard/
+│   │       │       ├── dashboard.controller.ts
+│   │       │       ├── dashboard.service.ts
+│   │       │       ├── dashboard.routes.ts
 │   │       │       └── __tests__/
 │   │       ├── middleware/
 │   │       │   ├── auth.middleware.ts
@@ -184,8 +186,9 @@ gastar-app-v2/
 │   │       │   ├── prisma.ts         # Prisma client singleton
 │   │       │   ├── resend.ts         # Email client
 │   │       │   └── errors.ts         # AppError class hierarchy
-│   │       └── types/                # Backend-only types
-│   │           └── express.d.ts      # Express type extensions
+│   │       ├── types/                # Backend-only types
+│   │       │   └── express.d.ts      # Express type extensions
+│   │       └── __integration__/          # Integration tests (supertest + real PostgreSQL)
 │   │
 │   └── frontend/             # @gastar/frontend — React SPA (PWA)
 │       ├── package.json
@@ -267,7 +270,7 @@ gastar-app-v2/
 ```yaml
 # pnpm-workspace.yaml
 packages:
-  - "packages/*"
+  - 'packages/*'
 ```
 
 ### Package Dependencies
@@ -294,10 +297,12 @@ modules/
 ├── accounts/       # Everything about accounts
 ├── categories/     # Everything about categories
 ├── transactions/   # Everything about transactions
-└── users/          # Everything about user profiles
+├── users/          # Everything about user profiles
+└── dashboard/      # Aggregated summary data for the frontend dashboard
 ```
 
 Each module contains:
+
 - **Controller**: Handles HTTP request/response. No business logic. Calls services.
 - **Service**: Contains ALL business logic. Calls Prisma. Returns typed data.
 - **Routes**: Express router definitions with middleware.
@@ -331,13 +336,13 @@ User Action → Component → Hook (React Query) → Service (API call) → Back
 
 ### State Management Split
 
-| State Type      | Tool          | Examples                                    |
-| --------------- | ------------- | ------------------------------------------- |
-| Server state    | React Query   | Accounts, transactions, categories, user    |
-| UI state        | Zustand       | Sidebar open/closed, active modal, theme    |
-| Form state      | React Hook Form | Form inputs, validation errors            |
-| URL state       | React Router  | Current page, query params for filters      |
-| Filter state    | Zustand       | Transaction filters (synced to URL params)  |
+| State Type   | Tool            | Examples                                   |
+| ------------ | --------------- | ------------------------------------------ |
+| Server state | React Query     | Accounts, transactions, categories, user   |
+| UI state     | Zustand         | Sidebar open/closed, active modal, theme   |
+| Form state   | React Hook Form | Form inputs, validation errors             |
+| URL state    | React Router    | Current page, query params for filters     |
+| Filter state | Zustand         | Transaction filters (synced to URL params) |
 
 > **Rule**: If data comes from the API, it lives in React Query. Zustand is for client-only state.
 
@@ -370,15 +375,15 @@ Account (1) ── (N) Transaction (as transfer peer — display only)
 
 Transfers create **2 Transaction records** linked by `transferGroupId`:
 
-| Field                  | Source (out)         | Destination (in)     |
-| ---------------------- | -------------------- | -------------------- |
-| `transferGroupId`      | Same UUID            | Same UUID            |
-| `transferSide`         | `out`                | `in`                 |
-| `accountId`            | Source account        | Destination account  |
-| `transferPeerAccountId`| Destination account   | Source account       |
-| `amount`               | Amount in source currency | Amount in dest currency |
-| `exchangeRate`         | Rate (if cross-currency) | Rate (if cross-currency) |
-| `categoryId`           | `null`               | `null`               |
+| Field                   | Source (out)              | Destination (in)         |
+| ----------------------- | ------------------------- | ------------------------ |
+| `transferGroupId`       | Same UUID                 | Same UUID                |
+| `transferSide`          | `out`                     | `in`                     |
+| `accountId`             | Source account            | Destination account      |
+| `transferPeerAccountId` | Destination account       | Source account           |
+| `amount`                | Amount in source currency | Amount in dest currency  |
+| `exchangeRate`          | Rate (if cross-currency)  | Rate (if cross-currency) |
+| `categoryId`            | `null`                    | `null`                   |
 
 **Why 2 records?** Each account "owns" its transaction. Balance updates use the same code path for all types. If one account is deleted, the other side keeps its record (peer link becomes null via `SetNull`).
 
@@ -396,14 +401,14 @@ Transfers create **2 Transaction records** linked by `transferGroupId`:
 
 These categories are copied to every new user at registration. The templates live in the auth service code, NOT in the database.
 
-| Name       | Icon           | Color     |
-| ---------- | -------------- | --------- |
-| Auto       | `car`          | `#3B82F6` |
-| Salud      | `heart-pulse`  | `#EF4444` |
-| Personal   | `user`         | `#8B5CF6` |
-| Social     | `users`        | `#F59E0B` |
-| Comida     | `utensils`     | `#10B981` |
-| Viajes     | `plane`        | `#06B6D4` |
+| Name     | Icon          | Color     |
+| -------- | ------------- | --------- |
+| Auto     | `car`         | `#3B82F6` |
+| Salud    | `heart-pulse` | `#EF4444` |
+| Personal | `user`        | `#8B5CF6` |
+| Social   | `users`       | `#F59E0B` |
+| Comida   | `utensils`    | `#10B981` |
+| Viajes   | `plane`       | `#06B6D4` |
 
 > Icons reference Lucide icon names. Colors are Tailwind-compatible hex values for chart consistency.
 
@@ -418,12 +423,12 @@ Each account has exactly ONE currency. Balances are **never consolidated** acros
 
 ### Delete Behavior
 
-| Action                    | Cascade Behavior                                           |
-| ------------------------- | ---------------------------------------------------------- |
-| Delete User               | Cascades to Accounts, Categories, UserSettings             |
-| Delete Account            | Cascades its Transactions. Peer transfer links → `SetNull` |
-| Delete Category           | **Restricted** if it has transactions (must reassign first)|
-| Delete Transaction        | Direct delete. If transfer, must delete both sides.        |
+| Action             | Cascade Behavior                                                                                            |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Delete User        | Cascades to Accounts, Categories, UserSettings                                                              |
+| Delete Account     | **Restricted** if it has Transactions (must delete or reassign them first). Peer transfer links → `SetNull` |
+| Delete Category    | **Restricted** if it has transactions (must reassign first)                                                 |
+| Delete Transaction | Direct delete. If transfer, must delete both sides.                                                         |
 
 ### Balance Integrity
 
@@ -438,16 +443,16 @@ Account `balance` is a stored field for fast reads. It MUST be updated inside `p
 Dual authentication with JWT tokens:
 
 1. **Email/Password**: Traditional registration → bcrypt hash → JWT
-2. **Google OAuth 2.0**: Via Passport.js Google strategy → JWT
+2. **Google OAuth 2.0**: Via Passport.js Google strategy → JWT _(planned — not yet implemented)_
 
 Both flows converge to JWT token issuance. After authentication, every request uses the same JWT-based authorization.
 
 ### Token Strategy
 
-| Token         | Lifetime  | Storage            | Purpose               |
-| ------------- | --------- | ------------------ | --------------------- |
-| Access Token  | 15 min    | Memory (JS variable) | API authorization   |
-| Refresh Token | 7 days    | HttpOnly cookie    | Access token renewal  |
+| Token         | Lifetime | Storage              | Purpose              |
+| ------------- | -------- | -------------------- | -------------------- |
+| Access Token  | 15 min   | Memory (JS variable) | API authorization    |
+| Refresh Token | 7 days   | HttpOnly cookie      | Access token renewal |
 
 ### Auth Flow
 
@@ -471,6 +476,7 @@ Both flows converge to JWT token issuance. After authentication, every request u
 ### Registration Side Effects
 
 When a new user registers (email/password or Google OAuth), the auth service also:
+
 1. Creates a `UserSettings` record (default language: `es`)
 2. Copies the default category templates as user-owned Category records
 
@@ -548,11 +554,11 @@ Is other?     → Log full stack trace to console → Respond 500 generic
 
 The error middleware maps known Prisma error codes to AppErrors:
 
-| Prisma Code | AppError          | Example                         |
-| ----------- | ----------------- | ------------------------------- |
-| `P2002`     | ConflictError     | Duplicate email on registration |
-| `P2025`     | NotFoundError     | Record to update/delete not found |
-| `P2003`     | ConflictError     | FK constraint (e.g. category in use) |
+| Prisma Code | AppError      | Example                              |
+| ----------- | ------------- | ------------------------------------ |
+| `P2002`     | ConflictError | Duplicate email on registration      |
+| `P2025`     | NotFoundError | Record to update/delete not found    |
+| `P2003`     | ConflictError | FK constraint (e.g. category in use) |
 
 ### Logging
 
@@ -609,59 +615,59 @@ All API responses follow a consistent envelope:
 
 #### Auth (`/v1/auth`)
 
-| Method | Path              | Description              | Auth |
-| ------ | ----------------- | ------------------------ | ---- |
-| POST   | `/register`       | Create account           | No   |
-| POST   | `/login`          | Email/password login     | No   |
-| GET    | `/google`         | Initiate Google OAuth    | No   |
-| GET    | `/google/callback` | Google OAuth callback   | No   |
-| POST   | `/refresh`        | Refresh access token     | Cookie |
-| POST   | `/logout`         | Clear refresh token      | Yes  |
-| POST   | `/forgot-password` | Request password reset  | No   |
-| POST   | `/reset-password` | Submit new password      | No   |
+| Method | Path               | Description                     | Auth   |
+| ------ | ------------------ | ------------------------------- | ------ |
+| POST   | `/register`        | Create account                  | No     |
+| POST   | `/login`           | Email/password login            | No     |
+| GET    | `/google`          | Initiate Google OAuth (planned) | No     |
+| GET    | `/google/callback` | Google OAuth callback (planned) | No     |
+| POST   | `/refresh`         | Refresh access token            | Cookie |
+| POST   | `/logout`          | Clear refresh token             | Yes    |
+| POST   | `/forgot-password` | Request password reset          | No     |
+| POST   | `/reset-password`  | Submit new password             | No     |
 
 #### Users (`/v1/users`)
 
-| Method | Path              | Description              | Auth |
-| ------ | ----------------- | ------------------------ | ---- |
-| GET    | `/me`             | Get current user profile | Yes  |
-| PATCH  | `/me`             | Update user profile      | Yes  |
+| Method | Path  | Description              | Auth |
+| ------ | ----- | ------------------------ | ---- |
+| GET    | `/me` | Get current user profile | Yes  |
+| PATCH  | `/me` | Update user profile      | Yes  |
 
 #### Accounts (`/v1/accounts`)
 
-| Method | Path              | Description              | Auth |
-| ------ | ----------------- | ------------------------ | ---- |
-| GET    | `/`               | List user's accounts     | Yes  |
-| GET    | `/:id`            | Get account details      | Yes  |
-| POST   | `/`               | Create account           | Yes  |
-| PATCH  | `/:id`            | Update account           | Yes  |
-| DELETE | `/:id`            | Delete account           | Yes  |
+| Method | Path   | Description          | Auth |
+| ------ | ------ | -------------------- | ---- |
+| GET    | `/`    | List user's accounts | Yes  |
+| GET    | `/:id` | Get account details  | Yes  |
+| POST   | `/`    | Create account       | Yes  |
+| PATCH  | `/:id` | Update account       | Yes  |
+| DELETE | `/:id` | Delete account       | Yes  |
 
 #### Categories (`/v1/categories`)
 
-| Method | Path              | Description              | Auth |
-| ------ | ----------------- | ------------------------ | ---- |
-| GET    | `/`               | List user's categories   | Yes  |
-| GET    | `/:id`            | Get category details     | Yes  |
-| POST   | `/`               | Create category          | Yes  |
-| PATCH  | `/:id`            | Update category          | Yes  |
-| DELETE | `/:id`            | Delete category          | Yes  |
+| Method | Path   | Description            | Auth |
+| ------ | ------ | ---------------------- | ---- |
+| GET    | `/`    | List user's categories | Yes  |
+| GET    | `/:id` | Get category details   | Yes  |
+| POST   | `/`    | Create category        | Yes  |
+| PATCH  | `/:id` | Update category        | Yes  |
+| DELETE | `/:id` | Delete category        | Yes  |
 
 #### Transactions (`/v1/transactions`)
 
-| Method | Path              | Description              | Auth |
-| ------ | ----------------- | ------------------------ | ---- |
-| GET    | `/`               | List transactions (filtered) | Yes |
-| GET    | `/:id`            | Get transaction details  | Yes  |
-| POST   | `/`               | Create transaction       | Yes  |
-| PATCH  | `/:id`            | Update transaction       | Yes  |
-| DELETE | `/:id`            | Delete transaction       | Yes  |
+| Method | Path   | Description                  | Auth |
+| ------ | ------ | ---------------------------- | ---- |
+| GET    | `/`    | List transactions (filtered) | Yes  |
+| GET    | `/:id` | Get transaction details      | Yes  |
+| POST   | `/`    | Create transaction           | Yes  |
+| PATCH  | `/:id` | Update transaction           | Yes  |
+| DELETE | `/:id` | Delete transaction           | Yes  |
 
 #### Dashboard (`/v1/dashboard`)
 
-| Method | Path              | Description                    | Auth |
-| ------ | ----------------- | ------------------------------ | ---- |
-| GET    | `/summary`        | Account balances + month stats | Yes  |
+| Method | Path       | Description                    | Auth |
+| ------ | ---------- | ------------------------------ | ---- |
+| GET    | `/summary` | Account balances + month stats | Yes  |
 
 ### Transaction Filters (Query Params)
 
@@ -669,15 +675,15 @@ All API responses follow a consistent envelope:
 GET /v1/transactions?accountId=xxx&categoryId=xxx&type=expense&dateFrom=2025-01-01&dateTo=2025-01-31&page=1&limit=20
 ```
 
-| Param        | Type   | Description                      |
-| ------------ | ------ | -------------------------------- |
-| `accountId`  | UUID   | Filter by account                |
-| `categoryId` | UUID   | Filter by category               |
-| `type`       | Enum   | `income`, `expense`, `transfer`  |
-| `dateFrom`   | Date   | Start date (inclusive)           |
-| `dateTo`     | Date   | End date (inclusive)             |
-| `page`       | Number | Page number (default: 1)         |
-| `limit`      | Number | Items per page (default: 20)     |
+| Param        | Type   | Description                     |
+| ------------ | ------ | ------------------------------- |
+| `accountId`  | UUID   | Filter by account               |
+| `categoryId` | UUID   | Filter by category              |
+| `type`       | Enum   | `income`, `expense`, `transfer` |
+| `dateFrom`   | Date   | Start date (inclusive)          |
+| `dateTo`     | Date   | End date (inclusive)            |
+| `page`       | Number | Page number (default: 1)        |
+| `limit`      | Number | Items per page (default: 20)    |
 
 ---
 
@@ -700,6 +706,7 @@ GET /v1/transactions?accountId=xxx&categoryId=xxx&type=expense&dateFrom=2025-01-
 Single responsive layout that adapts across breakpoints. NOT two separate layouts. See [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) for the complete layout specification per page, component variants, and responsive behavior details.
 
 **Breakpoints** (Tailwind defaults):
+
 - `sm`: 640px — Large phones
 - `md`: 768px — Tablets
 - `lg`: 1024px — Small desktops
@@ -707,12 +714,13 @@ Single responsive layout that adapts across breakpoints. NOT two separate layout
 
 **Layout behavior**:
 
-| Viewport   | Navigation          | Content               |
-| ---------- | ------------------- | --------------------- |
-| Mobile     | Bottom tab bar      | Full-width, stacked   |
-| Tablet+    | Collapsible sidebar | Grid layouts          |
+| Viewport | Navigation          | Content             |
+| -------- | ------------------- | ------------------- |
+| Mobile   | Bottom tab bar      | Full-width, stacked |
+| Tablet+  | Collapsible sidebar | Grid layouts        |
 
 **Key responsive patterns**:
+
 - **Dashboard cards**: 1 column on mobile → 2 columns on tablet → 3-4 on desktop
 - **Transaction table**: Card list on mobile → Full table on tablet+
 - **Forms**: Full-screen modals on mobile → Side sheets or inline on desktop
@@ -741,15 +749,15 @@ The app is **Spanish-first** with English as a secondary language. International
 
 ### Implementation
 
-| Aspect              | Approach                                              |
-| ------------------- | ----------------------------------------------------- |
-| Library             | `react-i18next` (i18next core)                        |
-| Translation files   | JSON files in `@gastar/shared/locales/` (shared)      |
-| Default language    | `es` (Spanish)                                        |
-| Supported languages | `es`, `en`                                            |
-| User preference     | Stored in `UserSettings.language`                     |
-| Detection           | UserSettings → Browser language → fallback to `es`    |
-| Loading             | Lazy-loaded per language (only active locale in memory)|
+| Aspect              | Approach                                                |
+| ------------------- | ------------------------------------------------------- |
+| Library             | `react-i18next` (i18next core)                          |
+| Translation files   | JSON files in `@gastar/shared/locales/` (shared)        |
+| Default language    | `es` (Spanish)                                          |
+| Supported languages | `es`, `en`                                              |
+| User preference     | Stored in `UserSettings.language`                       |
+| Detection           | UserSettings → Browser language → fallback to `es`      |
+| Loading             | Lazy-loaded per language (only active locale in memory) |
 
 ### Translation File Structure
 
@@ -802,13 +810,13 @@ PWA is part of the MVP. The app must be installable and provide a native-like ex
 
 ### Implementation
 
-| Aspect            | Approach                                           |
-| ----------------- | -------------------------------------------------- |
-| Build tool        | `vite-plugin-pwa` (Workbox under the hood)         |
-| Caching strategy  | **Network-first** for API calls, **Cache-first** for static assets |
-| Offline UX        | Show cached data with "offline" indicator. Disable mutations. |
-| Install prompt    | Custom in-app banner (not browser default)         |
-| Updates           | Prompt user when new version is available          |
+| Aspect           | Approach                                                           |
+| ---------------- | ------------------------------------------------------------------ |
+| Build tool       | `vite-plugin-pwa` (Workbox under the hood)                         |
+| Caching strategy | **Network-first** for API calls, **Cache-first** for static assets |
+| Offline UX       | Show cached data with "offline" indicator. Disable mutations.      |
+| Install prompt   | Custom in-app banner (not browser default)                         |
+| Updates          | Prompt user when new version is available                          |
 
 ### Manifest Essentials
 
@@ -848,14 +856,15 @@ Test behavior, not implementation. Prioritize tests that catch real bugs over te
 
 ### What to Test
 
-| Layer                    | Tool                  | What                                        |
-| ------------------------ | --------------------- | ------------------------------------------- |
-| Shared schemas           | Vitest                | Zod schema validation (valid + invalid)     |
-| Backend services         | Vitest                | Business logic, edge cases                  |
-| Backend controllers      | Vitest + supertest    | HTTP status codes, response shapes          |
-| Frontend components      | Vitest + RTL          | Render, user interactions, conditional UI   |
-| Frontend hooks           | Vitest + RTL          | Data fetching states (loading, error, data) |
-| Critical flows           | Playwright            | Login, create transaction, view dashboard   |
+| Layer                     | Tool               | What                                        |
+| ------------------------- | ------------------ | ------------------------------------------- |
+| Shared schemas            | Vitest             | Zod schema validation (valid + invalid)     |
+| Backend services          | Vitest             | Business logic, edge cases                  |
+| Backend controllers       | Vitest + supertest | HTTP status codes, response shapes          |
+| Backend API (integration) | Vitest + supertest | HTTP endpoint flows against real PostgreSQL |
+| Frontend components       | Vitest + RTL       | Render, user interactions, conditional UI   |
+| Frontend hooks            | Vitest + RTL       | Data fetching states (loading, error, data) |
+| Critical flows            | Playwright         | Login, create transaction, view dashboard   |
 
 ### Test File Convention
 
@@ -870,19 +879,29 @@ modules/accounts/
     └── accounts.controller.test.ts
 ```
 
+Integration tests live in a dedicated directory at the `src` level:
+
+```
+src/
+└── __integration__/
+    ├── auth.integration.test.ts
+    ├── accounts.integration.test.ts
+    └── ...
+```
+
 ---
 
 ## 13. Deployment & Infrastructure
 
 ### Environment
 
-| Component    | Production              | Development           |
-| ------------ | ----------------------- | --------------------- |
-| Host         | Hostinger VPS           | Local machine         |
-| Orchestrator | Dokploy                 | docker-compose        |
-| Database     | PostgreSQL (container)  | PostgreSQL (container)|
-| Frontend     | Nginx (container)       | Vite dev server       |
-| Backend      | Node.js (container)     | ts-node / tsx watch   |
+| Component    | Production             | Development            |
+| ------------ | ---------------------- | ---------------------- |
+| Host         | Hostinger VPS          | Local machine          |
+| Orchestrator | Dokploy                | docker-compose         |
+| Database     | PostgreSQL (container) | PostgreSQL (container) |
+| Frontend     | Nginx (container)      | Vite dev server        |
+| Backend      | Node.js (container)    | ts-node / tsx watch    |
 
 ### Docker Architecture
 
@@ -930,23 +949,26 @@ Push to main → Dokploy detects → Builds Docker images → Deploys containers
 
 These features constitute the Minimum Viable Product. Nothing more, nothing less.
 
-> **Progress note**: All backend API modules except Dashboard have been implemented. Frontend, i18n setup, PWA, and infrastructure are pending.
+> **Progress note**: The backend API is 100% complete — all 6 modules implemented, 321 unit tests + 92 integration tests passing. Frontend, i18n setup, PWA, and infrastructure are pending.
 
 ### Auth
+
 - [x] Email/password registration
 - [x] Email/password login
-- [x] Google OAuth login
+- [ ] Google OAuth login
 - [x] JWT access + refresh token flow
 - [x] Password reset via email (Resend)
 - [x] Logout
 
 ### Accounts
+
 - [x] List all accounts with balances
 - [x] Create account (name, type, currency, initial balance)
 - [x] Edit account
 - [x] Delete account (with confirmation)
 
 ### Categories
+
 - [x] Default categories created on user registration
 - [x] List all categories
 - [x] Create category (name, icon, color)
@@ -954,6 +976,7 @@ These features constitute the Minimum Viable Product. Nothing more, nothing less
 - [x] Delete category (with confirmation — blocked if transactions exist, must reassign first)
 
 ### Transactions
+
 - [x] List transactions with pagination
 - [x] Filter by: account, category, type, date range
 - [x] Create income transaction
@@ -963,6 +986,7 @@ These features constitute the Minimum Viable Product. Nothing more, nothing less
 - [x] Delete transaction (transfers delete both sides atomically)
 
 ### i18n
+
 - [ ] react-i18next setup with lazy-loaded locales
 - [ ] Spanish translation file (complete)
 - [ ] English translation file (complete)
@@ -970,21 +994,24 @@ These features constitute the Minimum Viable Product. Nothing more, nothing less
 - [ ] Language switcher in UI
 
 ### Dashboard
-- [ ] Balance totals grouped by currency (e.g. "ARS: $500.000 | USD: $2.000")
-- [ ] Per-account balance cards
-- [ ] Current month income total (per currency)
-- [ ] Current month expense total (per currency)
-- [ ] Current month net (income - expenses, per currency)
-- [ ] Expenses by category (pie/donut chart)
-- [ ] Recent transactions list (last 5-10)
+
+- [x] Balance totals grouped by currency (e.g. "ARS: $500.000 | USD: $2.000")
+- [x] Per-account balance cards
+- [x] Current month income total (per currency)
+- [x] Current month expense total (per currency)
+- [x] Current month net (income - expenses, per currency)
+- [x] Expenses by category (pie/donut chart)
+- [x] Recent transactions list (last 5-10)
 
 ### PWA
+
 - [ ] Installable with manifest
 - [ ] Service worker for offline shell
 - [ ] Dark mode with system preference detection and user toggle
 - [ ] Responsive layout (mobile bottom nav + desktop sidebar)
 
 ### Infrastructure
+
 - [ ] Docker Compose setup (dev + prod)
 - [ ] Dokploy deployment configuration
 - [ ] Database migrations pipeline

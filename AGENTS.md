@@ -18,14 +18,14 @@ The architecture is fully designed and documented. Do not deviate from it.
 
 ## Tech Stack
 
-| Layer      | Technology                    |
-| ---------- | ----------------------------- |
-| Database   | PostgreSQL 16 + Prisma ORM    |
-| Backend    | Node.js 22 LTS, Express 5    |
-| Frontend   | React 19, Vite, Tailwind 4   |
-| Language   | TypeScript 5.x everywhere    |
-| Monorepo   | pnpm workspaces               |
-| Testing    | Vitest, RTL, Playwright       |
+| Layer    | Technology                 |
+| -------- | -------------------------- |
+| Database | PostgreSQL 16 + Prisma ORM |
+| Backend  | Node.js 22 LTS, Express 5  |
+| Frontend | React 19, Vite, Tailwind 4 |
+| Language | TypeScript 5.x everywhere  |
+| Monorepo | pnpm workspaces            |
+| Testing  | Vitest, RTL, Playwright    |
 
 ---
 
@@ -89,7 +89,7 @@ These decisions are final. Do not question, change, or propose alternatives unle
 
 ### Backend Patterns
 
-- **Screaming architecture**: one folder per domain module (`auth/`, `accounts/`, `categories/`, `transactions/`, `users/`).
+- **Screaming architecture**: one folder per domain module (`auth/`, `accounts/`, `categories/`, `transactions/`, `users/`, `dashboard/`).
 - Each module: `*.controller.ts`, `*.service.ts`, `*.routes.ts`, `__tests__/`.
 - **Controllers** never access Prisma directly. **Services** never access `req`/`res`.
 - Services throw typed `AppError` subclasses. Controllers do NOT wrap in try/catch.
@@ -115,19 +115,19 @@ These decisions are final. Do not question, change, or propose alternatives unle
 
 ## Naming Conventions
 
-| Context                 | Convention           | Example                         |
-| ----------------------- | -------------------- | ------------------------------- |
-| Variables, functions    | `camelCase`          | `getUserAccounts`               |
-| Components, classes     | `PascalCase`         | `AccountCard`, `AppError`       |
-| Constants               | `SCREAMING_SNAKE`    | `DEFAULT_CATEGORIES`            |
-| Files (utilities)       | `kebab-case.ts`      | `api-client.ts`                 |
-| Files (React)           | `PascalCase.tsx`     | `AccountCard.tsx`               |
-| Files (types)           | `kebab-case.type.ts` | `account.types.ts`              |
-| Prisma models           | `PascalCase`         | `UserSettings`                  |
-| DB tables (@@map)       | `snake_case`         | `user_settings`                 |
-| DB columns (@map)       | `snake_case`         | `created_at`                    |
-| API endpoints           | Plural nouns         | `/accounts`, `/transactions`    |
-| Translation keys        | Dot notation         | `dashboard.totalBalance`        |
+| Context              | Convention           | Example                      |
+| -------------------- | -------------------- | ---------------------------- |
+| Variables, functions | `camelCase`          | `getUserAccounts`            |
+| Components, classes  | `PascalCase`         | `AccountCard`, `AppError`    |
+| Constants            | `SCREAMING_SNAKE`    | `DEFAULT_CATEGORIES`         |
+| Files (utilities)    | `kebab-case.ts`      | `api-client.ts`              |
+| Files (React)        | `PascalCase.tsx`     | `AccountCard.tsx`            |
+| Files (types)        | `kebab-case.type.ts` | `account.types.ts`           |
+| Prisma models        | `PascalCase`         | `UserSettings`               |
+| DB tables (@@map)    | `snake_case`         | `user_settings`              |
+| DB columns (@map)    | `snake_case`         | `created_at`                 |
+| API endpoints        | Plural nouns         | `/accounts`, `/transactions` |
+| Translation keys     | Dot notation         | `dashboard.totalBalance`     |
 
 ---
 
