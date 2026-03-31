@@ -62,7 +62,7 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
                     {...register('email')}
                   />
                   {errors.email && (
-                    <p className="text-destructive text-xs">{errors.email.message}</p>
+                    <p className="text-destructive text-xs">{t('auth.invalidEmail')}</p>
                   )}
                 </div>
 
@@ -83,7 +83,7 @@ export function LoginForm({ onSubmit, isLoading, error }: LoginFormProps) {
                     {...register('password')}
                   />
                   {errors.password && (
-                    <p className="text-destructive text-xs">{errors.password.message}</p>
+                    <p className="text-destructive text-xs">{t('common.required')}</p>
                   )}
                 </div>
 

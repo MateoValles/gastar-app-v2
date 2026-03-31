@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import * as authService from '../services/auth.service.js';
 import { useAuthStore } from '@/stores/auth.store.js';
+import { clearAccessToken } from '@/lib/api-client.js';
 import { queryClient } from '@/lib/query-client.js';
 import type {
   LoginInput,
@@ -13,13 +14,23 @@ import type {
   ResetPasswordInput,
 } from '@gastar/shared';
 
+// Module-level guard: ensures boot refresh runs exactly once globally,
+// even if multiple components call useAuth() or StrictMode double-mounts.
+let bootRefreshStarted = false;
+
 export function useAuth() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const authStore = useAuthStore();
+  const bootRefreshRef = useRef(false);
 
   // ─── Boot refresh (one-time side effect on app start) ────────────────────
   useEffect(() => {
+    // Guard: skip if already started by this or another instance
+    if (bootRefreshStarted) return;
+    bootRefreshStarted = true;
+    bootRefreshRef.current = true;
+
     let cancelled = false;
 
     authService
@@ -39,6 +50,10 @@ export function useAuth() {
 
     return () => {
       cancelled = true;
+      // In StrictMode dev, reset so the second mount can run
+      if (bootRefreshRef.current) {
+        bootRefreshStarted = false;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -49,7 +64,9 @@ export function useAuth() {
 
     channel.onmessage = (event: MessageEvent<string>) => {
       if (event.data === 'logout') {
+        clearAccessToken();
         authStore.clearAuth();
+        queryClient.clear();
         void navigate('/login');
       }
     };
@@ -85,7 +102,9 @@ export function useAuth() {
     onSuccess: () => {
       authStore.clearAuth();
       queryClient.clear();
-      new BroadcastChannel('auth').postMessage('logout');
+      const channel = new BroadcastChannel('auth');
+      channel.postMessage('logout');
+      channel.close();
       void navigate('/login');
     },
   });

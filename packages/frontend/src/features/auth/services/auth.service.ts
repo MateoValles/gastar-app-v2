@@ -1,4 +1,5 @@
 import { post, clearAccessToken, setAccessToken } from '@/lib/api-client.js';
+import { ApiError } from '@/lib/api-error.js';
 import type { ApiResponse, UserProfile } from '@gastar/shared';
 import type {
   LoginInput,
@@ -19,10 +20,37 @@ export interface RegisterResponse {
 }
 
 export async function login(data: LoginInput): Promise<LoginResponse> {
-  const response = await post<ApiResponse<LoginResponse>>('/auth/login', data, {
+  // Use raw fetch to avoid the 401 interceptor in api-client.
+  // A failed login returns 401 (invalid credentials) — we don't want that
+  // to trigger refreshOrQueue(), which would hard-redirect to /login.
+  const response = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
     credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
   });
-  const result = response.data;
+
+  if (!response.ok) {
+    let code = 'INTERNAL_ERROR';
+    let message = code;
+    let details: Array<{ field: string; message: string }> | undefined;
+    try {
+      const body = (await response.json()) as {
+        error?: { code?: string; message?: string; details?: typeof details };
+      };
+      if (body.error) {
+        code = body.error.code ?? code;
+        message = body.error.message ?? code;
+        details = body.error.details;
+      }
+    } catch {
+      // Could not parse error body — use defaults
+    }
+    throw new ApiError(code, message, response.status, details);
+  }
+
+  const body = (await response.json()) as ApiResponse<LoginResponse>;
+  const result = body.data;
   setAccessToken(result.accessToken);
   return result;
 }
@@ -40,7 +68,7 @@ export async function refresh(): Promise<LoginResponse> {
   });
 
   if (!response.ok) {
-    throw new Error('Refresh failed');
+    throw new ApiError('UNAUTHORIZED', 'UNAUTHORIZED', 401);
   }
 
   const body = (await response.json()) as ApiResponse<LoginResponse>;

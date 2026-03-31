@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
                     {...register('email')}
                   />
                   {errors.email && (
-                    <p className="text-destructive text-xs">{errors.email.message}</p>
+                    <p className="text-destructive text-xs">{t('auth.invalidEmail')}</p>
                   )}
                 </div>
 

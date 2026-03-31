@@ -82,7 +82,9 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
                     aria-invalid={!!errors.name}
                     {...register('name')}
                   />
-                  {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
+                  {errors.name && (
+                    <p className="text-destructive text-xs">{t('common.required')}</p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -97,7 +99,7 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
                     {...register('email')}
                   />
                   {errors.email && (
-                    <p className="text-destructive text-xs">{errors.email.message}</p>
+                    <p className="text-destructive text-xs">{t('auth.invalidEmail')}</p>
                   )}
                 </div>
 
@@ -113,7 +115,7 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
                     {...register('password')}
                   />
                   {errors.password && (
-                    <p className="text-destructive text-xs">{errors.password.message}</p>
+                    <p className="text-destructive text-xs">{t('auth.passwordTooShort')}</p>
                   )}
                 </div>
 
@@ -132,7 +134,7 @@ export function RegisterForm({ onSubmit, isLoading, error }: RegisterFormProps) 
                     <p className="text-destructive text-xs">
                       {errors.confirmPassword.message === 'passwordMismatch'
                         ? t('auth.passwordMismatch')
-                        : errors.confirmPassword.message}
+                        : t('common.required')}
                     </p>
                   )}
                 </div>

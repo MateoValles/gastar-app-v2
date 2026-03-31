@@ -18,10 +18,11 @@ import {
 } from '@/components/ui/card.js';
 
 // Extend with client-side confirmPassword validation
+// Messages use i18n keys — translated at render time below
 const resetPasswordFormSchema = z
   .object({
-    newPassword: z.string().min(8).max(72),
-    confirmPassword: z.string().min(1),
+    newPassword: z.string().min(8, 'passwordTooShort').max(72, 'passwordTooLong'),
+    confirmPassword: z.string().min(1, 'required'),
   })
   .superRefine((data, ctx) => {
     if (data.newPassword !== data.confirmPassword) {
@@ -40,6 +41,7 @@ export default function ResetPasswordPage() {
   const { resetPassword } = useAuth();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') ?? '';
+  const hasToken = token.length > 0;
 
   const {
     register,
@@ -50,6 +52,7 @@ export default function ResetPasswordPage() {
   });
 
   const onSubmit = (data: ResetPasswordFormInput) => {
+    if (!hasToken) return;
     resetPassword.mutate({ token, password: data.newPassword });
   };
 
@@ -69,6 +72,11 @@ export default function ResetPasswordPage() {
           </CardHeader>
 
           <CardContent>
+            {!hasToken && (
+              <p className="text-destructive text-sm mb-4" role="alert">
+                {t('auth.invalidResetLink')}
+              </p>
+            )}
             <form id="reset-password-form" onSubmit={handleSubmit(onSubmit)} noValidate>
               <div className="flex flex-col gap-4">
                 {/* New password */}
@@ -83,7 +91,11 @@ export default function ResetPasswordPage() {
                     {...register('newPassword')}
                   />
                   {errors.newPassword && (
-                    <p className="text-destructive text-xs">{errors.newPassword.message}</p>
+                    <p className="text-destructive text-xs">
+                      {t(`auth.${errors.newPassword.message}`, {
+                        defaultValue: t('errors.generic'),
+                      })}
+                    </p>
                   )}
                 </div>
 
@@ -100,9 +112,9 @@ export default function ResetPasswordPage() {
                   />
                   {errors.confirmPassword && (
                     <p className="text-destructive text-xs">
-                      {errors.confirmPassword.message === 'passwordMismatch'
-                        ? t('auth.passwordMismatch')
-                        : errors.confirmPassword.message}
+                      {t(`auth.${errors.confirmPassword.message}`, {
+                        defaultValue: t('errors.generic'),
+                      })}
                     </p>
                   )}
                 </div>
@@ -122,7 +134,7 @@ export default function ResetPasswordPage() {
               type="submit"
               form="reset-password-form"
               className="w-full"
-              disabled={resetPassword.isPending}
+              disabled={resetPassword.isPending || !hasToken}
             >
               {t('auth.resetPassword')}
             </Button>
