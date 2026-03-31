@@ -65,9 +65,13 @@ export async function getSummary(userId: string): Promise<DashboardSummaryRespon
   const accountIds = accounts.map((a) => a.id);
 
   // ── Step 3: Current month boundaries (UTC) ───────────────────────────────────
+  // monthStart: first moment of the month (inclusive, gte)
+  // monthEnd:   first moment of the NEXT month (exclusive, lt) — avoids the
+  //             last-day-at-midnight bug where `lte: lastDay00:00:00` misses
+  //             any transaction that occurs after midnight on the final day.
   const now = new Date();
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+  const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
 
   // ── Step 4: 4 parallel queries ───────────────────────────────────────────────
   const [incomeGrouped, expenseGrouped, expenseByCatGrouped, recentRaw] = await Promise.all([
@@ -77,7 +81,7 @@ export async function getSummary(userId: string): Promise<DashboardSummaryRespon
       where: {
         accountId: { in: accountIds },
         type: 'income',
-        date: { gte: monthStart, lte: monthEnd },
+        date: { gte: monthStart, lt: monthEnd },
       },
       _sum: { amount: true },
     }),
@@ -88,7 +92,7 @@ export async function getSummary(userId: string): Promise<DashboardSummaryRespon
       where: {
         accountId: { in: accountIds },
         type: 'expense',
-        date: { gte: monthStart, lte: monthEnd },
+        date: { gte: monthStart, lt: monthEnd },
       },
       _sum: { amount: true },
     }),
@@ -100,7 +104,7 @@ export async function getSummary(userId: string): Promise<DashboardSummaryRespon
       where: {
         accountId: { in: accountIds },
         type: 'expense',
-        date: { gte: monthStart, lte: monthEnd },
+        date: { gte: monthStart, lt: monthEnd },
         categoryId: { not: null },
       },
       _sum: { amount: true },
@@ -155,11 +159,11 @@ export async function getSummary(userId: string): Promise<DashboardSummaryRespon
   const currencyGroups: CurrencyGroupSummary[] = [...currencyAgg.entries()].map(
     ([currency, agg]) => ({
       currency,
-      totalBalance: agg.totalBalance.toString(),
+      totalBalance: agg.totalBalance.toFixed(2),
       accountCount: agg.accountCount,
-      monthlyIncome: agg.income.toString(),
-      monthlyExpenses: agg.expenses.toString(),
-      monthlyNet: agg.income.minus(agg.expenses).toString(),
+      monthlyIncome: agg.income.toFixed(2),
+      monthlyExpenses: agg.expenses.toFixed(2),
+      monthlyNet: agg.income.minus(agg.expenses).toFixed(2),
     }),
   );
 
@@ -191,7 +195,7 @@ export async function getSummary(userId: string): Promise<DashboardSummaryRespon
         categoryColor: cat?.color ?? null,
         categoryIcon: cat?.icon ?? null,
         currency: agg.currency,
-        total: agg.total.toString(),
+        total: agg.total.toFixed(2),
       };
     })
     // Sort descending by total so the donut chart shows highest spend first
@@ -205,7 +209,7 @@ export async function getSummary(userId: string): Promise<DashboardSummaryRespon
     categoryId: tx.categoryId,
     categoryName: tx.category?.name ?? null,
     type: tx.type as TransactionType,
-    amount: tx.amount.toString(),
+    amount: tx.amount.toFixed(2),
     currency: tx.account.currency as Currency,
     date: tx.date.toISOString().slice(0, 10), // YYYY-MM-DD (no time component)
     description: tx.description,

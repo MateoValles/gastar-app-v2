@@ -1,5 +1,4 @@
-import type { UserProfile } from '@gastar/shared';
-import type { UpdateUserInput } from '@gastar/shared';
+import type { UserProfile, UpdateUserInput } from '@gastar/shared';
 import { prisma } from '@/lib/prisma.js';
 import { ConflictError, NotFoundError } from '@/lib/errors.js';
 
@@ -70,10 +69,7 @@ export async function getMe(userId: string): Promise<UserProfile> {
  *
  * Uses `prisma.$transaction` only when both tables need updating to ensure atomicity.
  */
-export async function updateMe(
-  userId: string,
-  data: UpdateUserInput,
-): Promise<UserProfile> {
+export async function updateMe(userId: string, data: UpdateUserInput): Promise<UserProfile> {
   // Early existence check — a deleted user with a still-valid JWT must get 404,
   // not a misleading P2003 → 409 when only settings fields are sent.
   const currentUser = await prisma.user.findUnique({
