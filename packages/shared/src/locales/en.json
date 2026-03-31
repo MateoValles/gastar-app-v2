@@ -119,6 +119,8 @@
       "investment": "Investment"
     },
     "namePlaceholder": "e.g. Chase Bank, Cash",
+    "invalidBalance": "Enter a valid amount (e.g. 1000 or 1000.50)",
+    "initialBalancePlaceholder": "0",
     "currencies": {
       "ARS": "Argentine Peso (ARS)",
       "USD": "US Dollar (USD)",
