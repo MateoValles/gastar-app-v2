@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { ApiError } from '@/lib/api-error.js';
 import * as categoriesService from '../services/categories.service.js';
 import type { UpdateCategoryInput } from '@gastar/shared';
 
@@ -39,8 +40,14 @@ export function useCategories() {
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success(t('toast.deleted', { entity: t('common.category') }));
     },
-    onError: () => {
-      toast.warning(t('toast.category.hasTransactions'));
+    onError: (error) => {
+      if (error instanceof ApiError && error.status === 409) {
+        const match = /(\d+)/.exec(error.message);
+        const count = match ? Number(match[1]) : 0;
+        toast.warning(t('toast.category.hasTransactions', { count }));
+      } else {
+        toast.error(t('errors.generic'));
+      }
     },
   });
 

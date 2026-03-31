@@ -73,7 +73,8 @@ export function IconPicker({ value, onChange, disabled = false }: IconPickerProp
             <button
               key={name}
               type="button"
-              title={name}
+              aria-label={name}
+              aria-pressed={value === name}
               onClick={() => handleSelect(name)}
               className={cn(
                 'flex items-center justify-center rounded-md p-1.5 hover:bg-muted transition-colors',

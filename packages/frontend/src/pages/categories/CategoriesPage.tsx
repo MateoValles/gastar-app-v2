@@ -1,1 +1,1 @@
-export { default } from '@/features/categories/pages/CategoriesPage.js';
+export { default } from '@/features/categories/pages/CategoriesPage';

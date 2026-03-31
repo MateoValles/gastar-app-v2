@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { ApiError } from '@/lib/api-error.js';
 import * as categoriesService from '../../services/categories.service.js';
 import { useCategories } from '../use-categories.js';
 
@@ -162,7 +163,11 @@ describe('useCategories', () => {
     it('shows warning toast on 409 delete error', async () => {
       vi.mocked(categoriesService.getCategories).mockResolvedValue([mockCategory]);
       vi.mocked(categoriesService.deleteCategory).mockRejectedValue(
-        new Error('Category has transactions'),
+        new ApiError(
+          'CONFLICT',
+          'Cannot delete category: it has 3 associated transaction(s). Reassign them first.',
+          409,
+        ),
       );
 
       const { wrapper } = createWrapper();
