@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
+import { server } from './msw/server';
+
+// MSW server lifecycle
+beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 // Mock matchMedia (not available in jsdom)
 Object.defineProperty(window, 'matchMedia', {
@@ -29,3 +35,15 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
+
+// Mock BroadcastChannel (not available in jsdom)
+class BroadcastChannelMock {
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  postMessage = vi.fn();
+  addEventListener = vi.fn();
+  removeEventListener = vi.fn();
+  close = vi.fn();
+  constructor(_channelName: string) {}
+}
+
+global.BroadcastChannel = BroadcastChannelMock as unknown as typeof BroadcastChannel;
