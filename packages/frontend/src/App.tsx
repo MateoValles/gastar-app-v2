@@ -7,6 +7,8 @@ import '@/lib/i18n';
 import { useUIStore } from '@/stores/ui.store';
 import { AppRoutes } from '@/routes';
 import { GlobalErrorBoundary } from '@/components/error/GlobalErrorBoundary';
+import { OfflineIndicator } from '@/components/layout/OfflineIndicator';
+import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 
 function ThemeInitializer() {
   const { theme, setTheme } = useUIStore();
@@ -25,7 +27,9 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ThemeInitializer />
+          <OfflineIndicator />
           <AppRoutes />
+          <InstallPrompt />
           <Toaster position="bottom-right" richColors />
         </BrowserRouter>
       </QueryClientProvider>

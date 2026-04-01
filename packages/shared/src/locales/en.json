@@ -293,6 +293,14 @@
       "themeChanged": "Theme changed to {{theme}}"
     }
   },
+  "pwa": {
+    "offline": "You are offline — Data may not be up to date",
+    "backOnline": "Connection restored",
+    "installTitle": "Install Gastar",
+    "installDescription": "Add Gastar to your home screen for quick access",
+    "installButton": "Install",
+    "dismissButton": "Not now"
+  },
   "errors": {
     "NOT_FOUND": "Not found",
     "UNAUTHORIZED": "Unauthorized",
