@@ -23,7 +23,7 @@
 15. [Feature Scope (Post-MVP)](#15-feature-scope-post-mvp)
 16. [Conventions & Standards](#16-conventions--standards)
 
-> **Related documents**: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (visual identity, component variants, page layouts, toast catalog) · [`COMMIT_RULES.md`](./COMMIT_RULES.md) (git conventions) · [`AGENTS.md`](./AGENTS.md) (AI agent instructions)
+> **Related documents**: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) (visual identity, component variants, page layouts, toast catalog) · [`COMMIT_RULES.md`](./COMMIT_RULES.md) (git conventions) · [`AGENTS.md`](../AGENTS.md) (AI agent instructions)
 
 ---
 
@@ -56,7 +56,7 @@
 
 | Library              | Purpose                                  |
 | -------------------- | ---------------------------------------- |
-| Shadcn/ui            | Component library (built on Radix UI)    |
+| Shadcn/ui            | Component library (built on Base UI)     |
 | Tailwind CSS 4       | Utility-first styling                    |
 | React Router         | Client-side routing                      |
 | TanStack React Query | Server state management (cache, sync)    |
@@ -64,22 +64,23 @@
 | React Hook Form      | Form management                          |
 | Zod                  | Schema validation (shared with backend)  |
 | Recharts             | Charts and data visualization            |
+| Sonner               | Toast notifications                      |
 | react-i18next        | Internationalization (Spanish + English) |
 | Lucide React         | Icon library (pairs with Shadcn)         |
+| vite-plugin-pwa      | PWA manifest + service worker generation |
 
 ### Backend Libraries
 
-| Library             | Purpose                                                  |
-| ------------------- | -------------------------------------------------------- |
-| Prisma Client       | Database queries                                         |
-| Zod                 | Request validation (shared schemas)                      |
-| jsonwebtoken (jose) | JWT token generation & verification                      |
-| bcrypt              | Password hashing                                         |
-| Passport.js         | Planned: Google OAuth authentication (not yet implemented) |
-| Resend              | Transactional emails (password reset)                    |
-| helmet              | Security headers                                         |
-| cors                | CORS configuration                                       |
-| express-rate-limit  | Rate limiting                                            |
+| Library            | Purpose                               |
+| ------------------ | ------------------------------------- |
+| Prisma Client      | Database queries                      |
+| Zod                | Request validation (shared schemas)   |
+| jose               | JWT token generation & verification   |
+| bcrypt             | Password hashing                      |
+| Resend             | Transactional emails (password reset) |
+| helmet             | Security headers                      |
+| cors               | CORS configuration                    |
+| express-rate-limit | Rate limiting                         |
 
 ### DevOps & Tooling
 
@@ -105,17 +106,30 @@ Managed via **pnpm workspaces**. Three packages with clear boundaries.
 gastar-app-v2/
 ├── package.json              # Root: workspace config, shared scripts
 ├── pnpm-workspace.yaml       # Workspace definition
-├── docker-compose.yml        # Local dev + production compose
-├── Dockerfile.frontend       # Frontend container
-├── Dockerfile.backend        # Backend container
+├── tsconfig.base.json        # Shared TypeScript config (extended by each package)
+├── eslint.config.js          # Root ESLint flat config
+├── .prettierrc               # Prettier config
 ├── .env.example              # Environment variables template
-├── ARCHITECTURE.md           # This document
+├── Dockerfile                # Single-container production build
+├── AGENTS.md                 # AI agent instructions
+├── README.md                 # Project overview
+│
+├── docs/                     # Project documentation
+│   ├── ARCHITECTURE.md       # This document
+│   ├── DESIGN_SYSTEM.md      # Visual identity & UI conventions
+│   └── COMMIT_RULES.md       # Git conventions
+│
+├── assets/                   # Brand assets
+│   ├── logo.svg              # Source logo (G mark)
+│   ├── logo-mark.svg         # G mark only (favicon, PWA icons)
+│   └── logo-full.svg         # G mark + "GASTAR" text
 │
 ├── packages/
 │   ├── shared/               # @gastar/shared — shared code
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   └── src/
+│   │       ├── index.ts      # Barrel export
 │   │       ├── schemas/      # Zod schemas (used by both front & back)
 │   │       │   ├── auth.schema.ts
 │   │       │   ├── account.schema.ts
@@ -123,9 +137,10 @@ gastar-app-v2/
 │   │       │   ├── transaction.schema.ts
 │   │       │   └── user.schema.ts
 │   │       ├── types/        # Shared TypeScript types/interfaces
-│   │       │   ├── api.types.ts        # API response wrappers
+│   │       │   ├── api.types.ts
 │   │       │   ├── account.types.ts
 │   │       │   ├── category.types.ts
+│   │       │   ├── dashboard.types.ts
 │   │       │   ├── transaction.types.ts
 │   │       │   └── user.types.ts
 │   │       ├── constants/    # Shared constants & enums
@@ -139,6 +154,8 @@ gastar-app-v2/
 │   ├── backend/              # @gastar/backend — Express API
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── vitest.config.ts            # Unit test config
+│   │   └── vitest.integration.config.ts # Integration test config
 │   │   └── src/
 │   │       ├── index.ts              # Entry point
 │   │       ├── app.ts                # Express app setup
@@ -152,117 +169,89 @@ gastar-app-v2/
 │   │       │   │   ├── auth.service.ts
 │   │       │   │   ├── auth.routes.ts
 │   │       │   │   └── __tests__/
-│   │       │   ├── accounts/
-│   │       │   │   ├── accounts.controller.ts
-│   │       │   │   ├── accounts.service.ts
-│   │       │   │   ├── accounts.routes.ts
-│   │       │   │   └── __tests__/
-│   │       │   ├── categories/
-│   │       │   │   ├── categories.controller.ts
-│   │       │   │   ├── categories.service.ts
-│   │       │   │   ├── categories.routes.ts
-│   │       │   │   └── __tests__/
-│   │       │   ├── transactions/
-│   │       │   │   ├── transactions.controller.ts
-│   │       │   │   ├── transactions.service.ts
-│   │       │   │   ├── transactions.routes.ts
-│   │       │   │   └── __tests__/
-│   │       │   ├── users/
-│   │       │   │   ├── users.controller.ts
-│   │       │   │   ├── users.service.ts
-│   │       │   │   ├── users.routes.ts
-│   │       │   │   └── __tests__/
-│   │       │   └── dashboard/
-│   │       │       ├── dashboard.controller.ts
-│   │       │       ├── dashboard.service.ts
-│   │       │       ├── dashboard.routes.ts
-│   │       │       └── __tests__/
+│   │       │   ├── accounts/         # Same pattern for all modules:
+│   │       │   ├── categories/       #   *.controller.ts
+│   │       │   ├── transactions/     #   *.service.ts
+│   │       │   ├── users/            #   *.routes.ts
+│   │       │   └── dashboard/        #   __tests__/
 │   │       ├── middleware/
 │   │       │   ├── auth.middleware.ts
 │   │       │   ├── error.middleware.ts
-│   │       │   ├── validation.middleware.ts
-│   │       │   └── rate-limit.middleware.ts
+│   │       │   └── validation.middleware.ts
 │   │       ├── lib/                  # Shared utilities
 │   │       │   ├── prisma.ts         # Prisma client singleton
 │   │       │   ├── resend.ts         # Email client
 │   │       │   └── errors.ts         # AppError class hierarchy
-│   │       ├── types/                # Backend-only types
+│   │       ├── types/
 │   │       │   └── express.d.ts      # Express type extensions
-│   │       └── __integration__/          # Integration tests (supertest + real PostgreSQL)
+│   │       ├── test/
+│   │       │   └── prisma-mock.ts    # Prisma mock for unit tests
+│   │       └── __integration__/      # Integration tests (supertest + real PostgreSQL)
+│   │           ├── global-setup.ts
+│   │           ├── setup-env.ts
+│   │           ├── helpers/
+│   │           └── *.integration.test.ts
 │   │
 │   └── frontend/             # @gastar/frontend — React SPA (PWA)
 │       ├── package.json
 │       ├── tsconfig.json
-│       ├── vite.config.ts
+│       ├── vite.config.ts            # Vite + PWA + Vitest config
+│       ├── components.json           # Shadcn/ui config
 │       ├── index.html
 │       ├── public/
-│       │   ├── manifest.json         # PWA manifest
-│       │   ├── sw.js                 # Service worker
-│       │   └── icons/                # PWA icons (multiple sizes)
+│       │   └── favicon.svg
 │       └── src/
 │           ├── main.tsx              # Entry point
 │           ├── App.tsx               # Root component + providers
-│           ├── routes/               # Route definitions
-│           │   └── index.tsx
-│           ├── pages/                # Page-level components (one per route)
-│           │   ├── auth/
-│           │   │   ├── LoginPage.tsx
-│           │   │   ├── RegisterPage.tsx
-│           │   │   └── ResetPasswordPage.tsx
-│           │   ├── dashboard/
-│           │   │   └── DashboardPage.tsx
-│           │   ├── accounts/
-│           │   │   └── AccountsPage.tsx
+│           ├── routes/
+│           │   └── index.tsx         # Route definitions
+│           ├── features/             # Feature modules (self-contained)
+│           │   ├── auth/             # Each feature contains:
+│           │   │   ├── components/   #   Feature-specific components
+│           │   │   ├── hooks/        #   React Query hooks
+│           │   │   ├── pages/        #   Page components
+│           │   │   └── services/     #   API service functions
+│           │   ├── accounts/         # Same pattern for all features
 │           │   ├── categories/
-│           │   │   └── CategoriesPage.tsx
-│           │   └── transactions/
-│           │       └── TransactionsPage.tsx
-│           ├── components/           # Reusable components
-│           │   ├── ui/               # Shadcn/ui components (auto-generated)
-│           │   ├── layout/           # Layout components
-│           │   │   ├── AppLayout.tsx
-│           │   │   ├── Sidebar.tsx
-│           │   │   ├── Header.tsx
-│           │   │   ├── MobileNav.tsx
-│           │   │   └── PageContainer.tsx
-│           │   ├── forms/            # Form components
-│           │   │   ├── AccountForm.tsx
-│           │   │   ├── CategoryForm.tsx
-│           │   │   └── TransactionForm.tsx
-│           │   ├── data-display/     # Tables, cards, lists
-│           │   │   ├── AccountCard.tsx
-│           │   │   ├── TransactionTable.tsx
-│           │   │   └── CategoryList.tsx
-│           │   └── charts/           # Dashboard charts
-│           │       ├── BalanceOverview.tsx
-│           │       ├── ExpensesByCategory.tsx
-│           │       └── MonthlyTrend.tsx
-│           ├── hooks/                # Custom React hooks
-│           │   ├── use-accounts.ts
-│           │   ├── use-categories.ts
-│           │   ├── use-transactions.ts
-│           │   └── use-auth.ts
-│           ├── services/             # API client layer
-│           │   ├── api-client.ts     # Axios/fetch wrapper
-│           │   ├── auth.service.ts
-│           │   ├── accounts.service.ts
-│           │   ├── categories.service.ts
-│           │   └── transactions.service.ts
+│           │   ├── transactions/
+│           │   ├── dashboard/
+│           │   └── profile/
+│           ├── pages/                # Route proxy pages (import from features)
+│           │   ├── auth/
+│           │   ├── accounts/
+│           │   ├── categories/
+│           │   ├── dashboard/
+│           │   ├── transactions/
+│           │   └── profile/
+│           ├── components/           # Shared components
+│           │   ├── ui/               # Shadcn/ui primitives (auto-generated)
+│           │   ├── layout/           # AppLayout, Sidebar, MobileNav, TopBar
+│           │   ├── error/            # GlobalErrorBoundary, PageErrorBoundary
+│           │   └── pwa/              # InstallPrompt
+│           ├── hooks/                # Shared custom hooks
+│           │   ├── use-media-query.ts
+│           │   ├── use-online-status.ts
+│           │   └── use-install-prompt.ts
 │           ├── stores/               # Zustand stores (client state only)
-│           │   ├── ui.store.ts       # Sidebar, modals, theme
-│           │   └── filters.store.ts  # Transaction filters state
+│           │   ├── auth.store.ts
+│           │   ├── ui.store.ts
+│           │   └── filters.store.ts
 │           ├── lib/                  # Utilities
-│           │   ├── utils.ts          # General helpers (cn, formatters)
+│           │   ├── api-client.ts     # Fetch wrapper
+│           │   ├── api-error.ts      # API error handling
 │           │   ├── query-client.ts   # React Query client config
-│           │   └── i18n.ts           # i18next configuration
-│           └── styles/
-│               └── globals.css       # Tailwind base + custom tokens
+│           │   ├── i18n.ts           # i18next configuration
+│           │   └── utils.ts          # General helpers (cn, formatters)
+│           ├── styles/
+│           │   └── globals.css       # Tailwind base + custom tokens
+│           └── test/                 # Test infrastructure
+│               ├── setup.ts          # Vitest setup
+│               ├── test-utils.tsx    # Custom render with providers
+│               └── msw/              # Mock Service Worker handlers
 │
 └── database/                 # Database (not a workspace package)
     └── prisma/
-        ├── schema.prisma
-        ├── migrations/
-        └── seed.ts           # Database seeding
+        └── schema.prisma     # Database schema
 ```
 
 ### Workspace Configuration
@@ -318,13 +307,27 @@ Request → Route → Middleware(s) → Controller → Service → Prisma → DB
 
 ### Frontend: Feature-Based Organization
 
-The frontend follows a **feature-based structure** with clear separation:
+The frontend follows a **feature-based structure** where each domain is a self-contained module under `src/features/`:
 
-- **Pages**: One component per route. Composes feature components. Handles data fetching via hooks.
-- **Components**: Reusable UI pieces. Receive data via props. No direct API calls.
-- **Hooks**: Encapsulate React Query calls. One hook per domain (accounts, transactions, etc.).
-- **Services**: API client functions. Pure functions that return promises. No React dependencies.
-- **Stores**: Zustand stores for UI-only state. Server state lives in React Query cache.
+```
+features/
+├── auth/             # Each feature contains:
+│   ├── components/   #   Feature-specific presentational components
+│   ├── hooks/        #   React Query hooks (data fetching)
+│   ├── pages/        #   Page containers (compose components + hooks)
+│   └── services/     #   API service functions (pure, no React)
+├── accounts/
+├── categories/
+├── transactions/
+├── dashboard/
+└── profile/
+```
+
+- **`src/pages/`**: Thin proxy pages that re-export from `features/*/pages/`. These are the route targets — they keep the router config clean.
+- **`src/components/`**: Shared/cross-cutting components (`ui/`, `layout/`, `error/`, `pwa/`).
+- **`src/hooks/`**: Shared hooks not tied to a specific feature (e.g. `use-media-query`, `use-online-status`).
+- **`src/stores/`**: Zustand stores for client-only state (`auth`, `ui`, `filters`).
+- **`src/lib/`**: Utilities (`api-client`, `query-client`, `i18n`, `utils`).
 
 ### Data Flow
 
@@ -699,6 +702,7 @@ GET /v1/transactions?accountId=xxx&categoryId=xxx&type=expense&dateFrom=2025-01-
 /accounts             → AccountsPage
 /categories           → CategoriesPage
 /transactions         → TransactionsPage
+/profile              → ProfilePage
 ```
 
 ### Layout Strategy: Responsive Mobile-First
@@ -895,36 +899,56 @@ src/
 
 ### Environment
 
-| Component    | Production             | Development            |
-| ------------ | ---------------------- | ---------------------- |
-| Host         | Hostinger VPS          | Local machine          |
-| Orchestrator | Dokploy                | docker-compose         |
-| Database     | PostgreSQL (container) | PostgreSQL (container) |
-| Frontend     | Nginx (container)      | Vite dev server        |
-| Backend      | Node.js (container)    | ts-node / tsx watch    |
+| Component    | Production                                              | Development                 |
+| ------------ | ------------------------------------------------------- | --------------------------- |
+| Host         | Hostinger VPS (4GB / 2 vCPU / 25GB)                     | Local machine               |
+| Orchestrator | Dokploy                                                 | pnpm scripts                |
+| Database     | PostgreSQL 16 (Dokploy)                                 | PostgreSQL (local)          |
+| Application  | Single container (Express serves API + static frontend) | Vite dev server + tsx watch |
+| DB Admin     | pgweb (standalone Dokploy project)                      | pgweb / psql                |
 
-### Docker Architecture
+### Single-Container Architecture
+
+The production image is a **single Docker container** where Express serves both the API and the frontend static build. This is intentional for a <10 user app on a 4GB VPS.
 
 ```
-docker-compose.yml
-├── frontend    (Nginx serving built React app)
-├── backend     (Node.js Express API)
-├── postgres    (PostgreSQL 16)
-└── (Dokploy handles reverse proxy + SSL in production)
+┌─────────────────────────────────────┐
+│          Single Container           │
+│                                     │
+│  Express.js                         │
+│  ├── /v1/*  → API routes            │
+│  └── /*     → Static frontend       │
+│             (Vite build output)     │
+│                                     │
+└──────────────┬──────────────────────┘
+               │
+     ┌─────────▼─────────┐
+     │  PostgreSQL 16     │
+     │  (Dokploy managed) │
+     └───────────────────┘
 ```
+
+**Why single-container?** VPS has limited resources. Separate Nginx + Node containers add overhead with no benefit at this scale. Express can serve static files efficiently for <10 users.
+
+### CI/CD Pipeline
+
+```
+Push to main → GitHub Actions → Build Docker image → Push to GHCR → Dokploy pulls & deploys
+```
+
+- **Build**: Happens in GitHub Actions (not on VPS — would freeze the 4GB machine)
+- **Registry**: GitHub Container Registry (GHCR)
+- **Deploy**: Dokploy pulls the pre-built image from GHCR and runs it
 
 ### Environment Variables
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:pass@postgres:5432/gastar
+DATABASE_URL=postgresql://user:pass@host:5432/gastar
 
 # Auth
 JWT_ACCESS_SECRET=xxx
 JWT_REFRESH_SECRET=xxx
-GOOGLE_CLIENT_ID=xxx
-GOOGLE_CLIENT_SECRET=xxx
-GOOGLE_CALLBACK_URL=https://api.gastar.app/v1/auth/google/callback
 
 # Email
 RESEND_API_KEY=xxx
@@ -933,14 +957,7 @@ RESEND_FROM_EMAIL=noreply@gastar.app
 # App
 NODE_ENV=production
 PORT=3001
-FRONTEND_URL=https://gastar.app
-CORS_ORIGIN=https://gastar.app
-```
-
-### Deployment Flow
-
-```
-Push to main → Dokploy detects → Builds Docker images → Deploys containers → Health check
+FRONTEND_URL=https://gastar.mateovalles.cloud
 ```
 
 ---
@@ -949,13 +966,13 @@ Push to main → Dokploy detects → Builds Docker images → Deploys containers
 
 These features constitute the Minimum Viable Product. Nothing more, nothing less.
 
-> **Progress note**: The backend API is 100% complete — all 6 modules implemented, 321 unit tests + 92 integration tests passing. Frontend, i18n setup, PWA, and infrastructure are pending.
+> **Progress note**: Backend API is 100% complete (6 modules, 321 unit tests + 92 integration tests). Frontend is 100% complete (8 batches, PRs #18-#25). Infrastructure (Docker, CI/CD) is pending.
 
 ### Auth
 
 - [x] Email/password registration
 - [x] Email/password login
-- [ ] Google OAuth login
+- [ ] Google OAuth login _(moved to post-MVP)_
 - [x] JWT access + refresh token flow
 - [x] Password reset via email (Resend)
 - [x] Logout
@@ -987,10 +1004,10 @@ These features constitute the Minimum Viable Product. Nothing more, nothing less
 
 ### i18n
 
-- [ ] react-i18next setup with lazy-loaded locales
-- [ ] Spanish translation file (complete)
-- [ ] English translation file (complete)
-- [ ] Language preference in UserSettings
+- [x] react-i18next setup with lazy-loaded locales
+- [x] Spanish translation file (complete)
+- [x] English translation file (complete)
+- [x] Language preference in UserSettings
 - [ ] Language switcher in UI
 
 ### Dashboard
@@ -1005,16 +1022,16 @@ These features constitute the Minimum Viable Product. Nothing more, nothing less
 
 ### PWA
 
-- [ ] Installable with manifest
-- [ ] Service worker for offline shell
+- [x] Installable with manifest
+- [x] Service worker for offline shell
 - [ ] Dark mode with system preference detection and user toggle
-- [ ] Responsive layout (mobile bottom nav + desktop sidebar)
+- [x] Responsive layout (mobile bottom nav + desktop sidebar)
 
 ### Infrastructure
 
-- [ ] Docker Compose setup (dev + prod)
+- [ ] Dockerfile (single-container build)
+- [ ] CI/CD pipeline (GitHub Actions → GHCR → Dokploy)
 - [ ] Dokploy deployment configuration
-- [ ] Database migrations pipeline
 
 ---
 
@@ -1022,11 +1039,11 @@ These features constitute the Minimum Viable Product. Nothing more, nothing less
 
 These features are planned but NOT part of the initial build. They will each get their own design document when scoped.
 
+- **Google OAuth**: Login via Google (Passport.js strategy)
 - **Budgets**: Monthly budget per category with progress tracking
 - **Recurring transactions**: Auto-generation of scheduled transactions
 - **Data export**: CSV/Excel export of transactions
 - **Reports**: Monthly/yearly reports with comparisons
-- **Dark mode**: Theme toggle (light/dark)
 - **Notifications**: Budget alerts, bill reminders
 
 ---
