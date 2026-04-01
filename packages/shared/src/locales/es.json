@@ -293,6 +293,14 @@
       "themeChanged": "Tema cambiado a {{theme}}"
     }
   },
+  "pwa": {
+    "offline": "Sin conexión — Los datos pueden no estar actualizados",
+    "backOnline": "Conexión restaurada",
+    "installTitle": "Instalar Gastar",
+    "installDescription": "Agregá Gastar a tu pantalla de inicio para un acceso rápido",
+    "installButton": "Instalar",
+    "dismissButton": "Ahora no"
+  },
   "errors": {
     "NOT_FOUND": "No encontrado",
     "UNAUTHORIZED": "No autorizado",
