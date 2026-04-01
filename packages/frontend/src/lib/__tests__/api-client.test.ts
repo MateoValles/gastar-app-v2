@@ -7,6 +7,7 @@ import {
   post,
   patch,
   del,
+  BASE_URL,
 } from '../api-client.js';
 import { ApiError } from '../api-error.js';
 import { server } from '../../test/msw/server.js';
@@ -197,5 +198,27 @@ describe('api-client', () => {
         expect.objectContaining({ method: 'DELETE' }),
       );
     });
+  });
+});
+
+describe('BASE_URL — same-origin default', () => {
+  it('exports BASE_URL as a string', () => {
+    expect(typeof BASE_URL).toBe('string');
+    expect(BASE_URL.length).toBeGreaterThan(0);
+  });
+
+  it('defaults to /v1 when VITE_API_URL is not set (same-origin production)', () => {
+    // In the test environment, import.meta.env.VITE_API_URL is undefined,
+    // so BASE_URL must fall back to '/v1'.
+    expect(BASE_URL).toBe('/v1');
+  });
+
+  it('apiFetch uses BASE_URL as prefix for relative paths', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse(200, { success: true, data: {} }));
+
+    await apiFetch('/accounts');
+
+    const [calledUrl] = mockFetch.mock.calls[0] as [string];
+    expect(calledUrl).toBe(`${BASE_URL}/accounts`);
   });
 });
