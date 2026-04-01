@@ -111,7 +111,7 @@ gastar-app-v2/
 
 ### Infrastructure
 
-In progress — Dockerfile and CI/CD pipeline pending.
+In progress — Dockerfile and GitHub Actions workflow to publish the container image to GHCR are now in place. Dokploy runtime configuration and production rollout remain pending.
 
 ---
 
