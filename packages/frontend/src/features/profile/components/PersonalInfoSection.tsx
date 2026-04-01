@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { updateUserSchema } from '@gastar/shared';
 import type { UserProfile } from '@gastar/shared';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card.js';
 import { Button } from '@/components/ui/button.js';
@@ -10,11 +11,9 @@ import { Input } from '@/components/ui/input.js';
 import { Label } from '@/components/ui/label.js';
 import { formatDate } from '@/lib/utils.js';
 
-// ─── Local schema (name-only subset of updateUserSchema) ──────────────────────
+// ─── Derived schema: name-only subset of updateUserSchema ─────────────────────
 
-const nameFormSchema = z.object({
-  name: z.string().min(1).max(100),
-});
+const nameFormSchema = updateUserSchema.innerType().pick({ name: true }).required();
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -81,7 +80,9 @@ export function PersonalInfoSection({
                 {...register('name')}
               />
               {errors.name && (
-                <span className="text-xs text-destructive">{t('common.required')}</span>
+                <span className="text-xs text-destructive">
+                  {errors.name.message ?? t('common.required')}
+                </span>
               )}
               <div className="flex gap-2">
                 <Button type="submit" size="sm" disabled={isUpdating}>

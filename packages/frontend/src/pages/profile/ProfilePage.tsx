@@ -1,1 +1,1 @@
-export { default } from '@/features/profile/pages/ProfilePage.js';
+export { default } from '@/features/profile/pages/ProfilePage';
