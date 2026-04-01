@@ -61,7 +61,8 @@
     "unknown": "Desconocido",
     "toggleSidebar": "Alternar barra lateral",
     "openMenu": "Abrir menú",
-    "amountPlaceholder": "0.00"
+    "amountPlaceholder": "0.00",
+    "profile": "Perfil"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -98,7 +99,8 @@
     "forgotPasswordSubtitle": "Ingresá tu email y te enviamos un enlace para restablecer tu contraseña",
     "resetPasswordTitle": "Nueva contraseña",
     "resetPasswordSubtitle": "Ingresá tu nueva contraseña",
-    "invalidResetLink": "El enlace de restablecimiento es inválido o expiró. Solicitá uno nuevo."
+    "invalidResetLink": "El enlace de restablecimiento es inválido o expiró. Solicitá uno nuevo.",
+    "logoutConfirm": "¿Estás seguro de que querés cerrar sesión?"
   },
   "accounts": {
     "title": "Mis Cuentas",
