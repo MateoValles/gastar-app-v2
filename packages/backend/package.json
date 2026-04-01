@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && tsc-alias -p tsconfig.json --resolve-full-paths --resolve-full-extension .js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -33,6 +33,7 @@
     "@types/supertest": "^7.2.0",
     "dotenv": "^17.3.1",
     "supertest": "^7.2.2",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vite-tsconfig-paths": "^6.1.1",
