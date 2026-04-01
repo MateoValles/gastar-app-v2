@@ -3,6 +3,7 @@ import { accountHandlers } from './handlers/accounts.handlers';
 import { categoryHandlers } from './handlers/categories.handlers';
 import { transactionHandlers } from './handlers/transactions.handlers';
 import { dashboardHandlers } from './handlers/dashboard.handlers';
+import { userHandlers } from './handlers/users.handlers';
 
 export const handlers = [
   ...authHandlers,
@@ -10,4 +11,5 @@ export const handlers = [
   ...categoryHandlers,
   ...transactionHandlers,
   ...dashboardHandlers,
+  ...userHandlers,
 ];

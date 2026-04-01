@@ -61,7 +61,8 @@
     "unknown": "Unknown",
     "toggleSidebar": "Toggle sidebar",
     "openMenu": "Open menu",
-    "amountPlaceholder": "0.00"
+    "amountPlaceholder": "0.00",
+    "profile": "Profile"
   },
   "auth": {
     "login": "Sign in",
@@ -98,7 +99,8 @@
     "forgotPasswordSubtitle": "Enter your email and we'll send you a reset link",
     "resetPasswordTitle": "New password",
     "resetPasswordSubtitle": "Enter your new password",
-    "invalidResetLink": "This reset link is invalid or has expired. Please request a new one."
+    "invalidResetLink": "This reset link is invalid or has expired. Please request a new one.",
+    "logoutConfirm": "Are you sure you want to sign out?"
   },
   "accounts": {
     "title": "My Accounts",
