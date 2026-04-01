@@ -13,11 +13,13 @@ import { getMe, updateMe } from '../users.service.js';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const USER_ID = 'user-uuid-001';
+const USER_CREATED_AT = new Date('2026-01-01T00:00:00.000Z');
 
 const prismaUser = {
   id: USER_ID,
   email: 'alice@example.com',
   name: 'Alice',
+  createdAt: USER_CREATED_AT,
   settings: { language: 'es' },
 };
 
@@ -25,6 +27,7 @@ const prismaUserNoSettings = {
   id: USER_ID,
   email: 'alice@example.com',
   name: 'Alice',
+  createdAt: USER_CREATED_AT,
   settings: null,
 };
 
@@ -33,6 +36,7 @@ const expectedProfile = {
   email: 'alice@example.com',
   name: 'Alice',
   language: 'es',
+  createdAt: USER_CREATED_AT.toISOString(),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -272,6 +276,7 @@ describe('updateMe', () => {
     expect(profile).toHaveProperty('email');
     expect(profile).toHaveProperty('name');
     expect(profile).toHaveProperty('language');
+    expect(profile).toHaveProperty('createdAt');
   });
 
   // ── Update email successfully ──────────────────────────────────────────────
