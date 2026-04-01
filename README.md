@@ -118,6 +118,7 @@ Current deployment target contract:
 - `development` branch publishes `ghcr.io/mateovalles/gastar-app-v2:development`
 - `main` branch publishes `ghcr.io/mateovalles/gastar-app-v2:latest`
 - Dokploy `production` and `development` apps are expected to run the container on port `3001`
+- The container entrypoint runs `prisma migrate deploy` automatically before starting the backend
 - Dokploy secrets/domains must be finalized before the first real deployment
 
 ---

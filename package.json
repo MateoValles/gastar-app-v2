@@ -13,6 +13,7 @@
     "format": "prettier --write \"packages/**/*.{ts,tsx,js,json,css}\"",
     "format:check": "prettier --check \"packages/**/*.{ts,tsx,js,json,css}\"",
     "db:generate": "prisma generate --schema=database/prisma/schema.prisma",
+    "db:migrate:deploy": "prisma migrate deploy --schema=database/prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=database/prisma/schema.prisma",
     "db:push": "prisma db push --schema=database/prisma/schema.prisma"
   },

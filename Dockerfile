@@ -21,6 +21,7 @@ RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.base.json ./
 COPY database/prisma ./database/prisma
+COPY scripts ./scripts
 COPY packages/shared ./packages/shared
 COPY packages/frontend ./packages/frontend
 COPY packages/backend ./packages/backend
@@ -52,7 +53,10 @@ COPY --from=build /out/shared/src/locales ./node_modules/@gastar/shared/src/loca
 COPY --from=build /out/shared/package.json ./node_modules/@gastar/shared/package.json
 COPY --from=build /app/packages/frontend/dist ./packages/frontend/dist
 COPY --from=build /app/database/prisma ./database/prisma
+COPY --from=build /app/scripts/docker-entrypoint.sh ./scripts/docker-entrypoint.sh
+
+RUN chmod +x ./scripts/docker-entrypoint.sh
 
 EXPOSE 3001
 
-CMD ["node", "packages/backend/dist/index.js"]
+ENTRYPOINT ["./scripts/docker-entrypoint.sh"]
