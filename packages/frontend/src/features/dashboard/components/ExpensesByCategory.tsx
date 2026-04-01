@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { formatMoney } from '@/lib/utils.js';
 import type { ExpenseByCategoryItem } from '@gastar/shared';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -16,7 +17,7 @@ interface ExpensesByCategoryProps {
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export function ExpensesByCategory({ expenses, currency }: ExpensesByCategoryProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (expenses.length === 0) {
     return (
@@ -48,7 +49,7 @@ export function ExpensesByCategory({ expenses, currency }: ExpensesByCategoryPro
             <Cell key={`cell-${index}`} fill={entry.color} />
           ))}
         </Pie>
-        <Tooltip formatter={(value) => [`${String(value)} ${currency}`, '']} />
+        <Tooltip formatter={(value) => [formatMoney(String(value), currency, i18n.language), '']} />
         <Legend />
       </PieChart>
     </ResponsiveContainer>

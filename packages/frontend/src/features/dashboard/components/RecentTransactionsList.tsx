@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router';
 import { buttonVariants } from '@/components/ui/button.js';
-import { formatDate, cn } from '@/lib/utils.js';
+import { formatRelativeDate, formatMoney, cn } from '@/lib/utils.js';
 import type { RecentTransactionItem } from '@gastar/shared';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ export function RecentTransactionsList({ transactions, locale }: RecentTransacti
                 {tx.description ?? tx.categoryName ?? t('dashboard.recentTransactions')}
               </span>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{formatDate(tx.date, locale)}</span>
+                <span>{formatRelativeDate(tx.date, locale)}</span>
                 {tx.categoryName && (
                   <>
                     <span>·</span>
@@ -77,7 +77,7 @@ export function RecentTransactionsList({ transactions, locale }: RecentTransacti
               className={cn('shrink-0 text-sm font-medium tabular-nums', getAmountColor(tx.type))}
             >
               {getAmountPrefix(tx)}
-              {tx.amount} {tx.currency}
+              {formatMoney(tx.amount, tx.currency, locale)}
             </span>
           </div>
         ))}
