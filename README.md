@@ -54,12 +54,11 @@ gastar-app-v2/
 │   ├── backend/         # Express API (screaming architecture)
 │   └── frontend/        # React SPA (PWA)
 ├── database/
-│   └── prisma/          # Schema, migrations, seed
+│   └── prisma/          # Schema & migrations
+├── docs/                # Project documentation
 ├── assets/              # Logo and brand assets
-├── ARCHITECTURE.md      # Architecture & decisions
-├── DESIGN_SYSTEM.md     # Visual identity & UI
-├── COMMIT_RULES.md      # Git conventions
-└── AGENTS.md            # AI agent instructions
+├── AGENTS.md            # AI agent instructions
+└── README.md            # This file
 ```
 
 > **Dependency direction**: `frontend` → `shared` ← `backend`. The shared package never imports from frontend or backend.
@@ -68,12 +67,12 @@ gastar-app-v2/
 
 ## Documentation
 
-| Document                                 | Description                                                                               |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md)   | Single source of truth — tech stack, patterns, database schema, API design, feature scope |
-| [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Visual identity — colors, typography, components, layouts, toasts                         |
-| [`COMMIT_RULES.md`](./COMMIT_RULES.md)   | Git conventions — conventional commits, branch naming, PR rules                           |
-| [`AGENTS.md`](./AGENTS.md)               | AI agent instructions — project context for automated assistants                          |
+| Document                                      | Description                                                                               |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [`ARCHITECTURE.md`](./docs/ARCHITECTURE.md)   | Single source of truth — tech stack, patterns, database schema, API design, feature scope |
+| [`DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md) | Visual identity — colors, typography, components, layouts, toasts                         |
+| [`COMMIT_RULES.md`](./docs/COMMIT_RULES.md)   | Git conventions — conventional commits, branch naming, PR rules                           |
+| [`AGENTS.md`](./AGENTS.md)                    | AI agent instructions — project context for automated assistants                          |
 
 ---
 
@@ -83,7 +82,7 @@ gastar-app-v2/
 
 | Module       | Status  | PR                                                          | Endpoints                                                                                       |
 | ------------ | ------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Auth         | ✅ Done | [#3](https://github.com/MateoValles/gastar-app-v2/pull/3)   | Email/password auth (register, login), refresh, logout, password reset; Google OAuth planned   |
+| Auth         | ✅ Done | [#3](https://github.com/MateoValles/gastar-app-v2/pull/3)   | Email/password auth (register, login), refresh, logout, password reset                          |
 | Accounts     | ✅ Done | [#5](https://github.com/MateoValles/gastar-app-v2/pull/5)   | Full CRUD with ownership enforcement                                                            |
 | Categories   | ✅ Done | [#6](https://github.com/MateoValles/gastar-app-v2/pull/6)   | Full CRUD with pre-flight delete checks                                                         |
 | Transactions | ✅ Done | [#7](https://github.com/MateoValles/gastar-app-v2/pull/7)   | Full CRUD, 2-record transfers, atomic balance updates, pagination + filtering                   |
@@ -99,11 +98,20 @@ gastar-app-v2/
 
 ### Frontend
 
-Not started yet.
+| Batch | Feature      | Status  | PR                                                          |
+| ----- | ------------ | ------- | ----------------------------------------------------------- |
+| 0     | Foundation   | ✅ Done | [#18](https://github.com/MateoValles/gastar-app-v2/pull/18) |
+| 1     | Auth         | ✅ Done | [#19](https://github.com/MateoValles/gastar-app-v2/pull/19) |
+| 2     | Accounts     | ✅ Done | [#20](https://github.com/MateoValles/gastar-app-v2/pull/20) |
+| 3     | Categories   | ✅ Done | [#21](https://github.com/MateoValles/gastar-app-v2/pull/21) |
+| 4     | Transactions | ✅ Done | [#22](https://github.com/MateoValles/gastar-app-v2/pull/22) |
+| 5     | Dashboard    | ✅ Done | [#23](https://github.com/MateoValles/gastar-app-v2/pull/23) |
+| 6     | Profile      | ✅ Done | [#24](https://github.com/MateoValles/gastar-app-v2/pull/24) |
+| 7     | PWA          | ✅ Done | [#25](https://github.com/MateoValles/gastar-app-v2/pull/25) |
 
 ### Infrastructure
 
-Not started yet.
+In progress — Dockerfile and CI/CD pipeline pending.
 
 ---
 
@@ -126,8 +134,11 @@ cd gastar-app-v2
 pnpm install
 
 # Set up environment variables
-cp .env.example .env
+cp .env.example packages/backend/.env
 # Edit .env with your database credentials and secrets
+
+# Generate Prisma client
+pnpm db:generate
 
 # Run database migrations
 pnpm db:migrate
@@ -135,8 +146,8 @@ pnpm db:migrate
 # Build the shared package
 pnpm --filter @gastar/shared build
 
-# Start the backend dev server
-pnpm --filter @gastar/backend dev
+# Start development (backend + frontend in parallel)
+pnpm dev
 ```
 
 ---

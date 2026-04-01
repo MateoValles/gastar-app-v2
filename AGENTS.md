@@ -10,9 +10,9 @@
 **Gastar** is a personal finance tracker — PERN stack, TypeScript monorepo, <10 users.
 The architecture is fully designed and documented. Do not deviate from it.
 
-**Source of truth**: [`ARCHITECTURE.md`](./ARCHITECTURE.md) — if something isn't there, it doesn't exist yet.
+**Source of truth**: [`ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — if something isn't there, it doesn't exist yet.
 
-**Visual identity**: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) — colors, typography, layouts, components, toasts. Every UI decision traces back to this document.
+**Visual identity**: [`DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md) — colors, typography, layouts, components, toasts. Every UI decision traces back to this document.
 
 ---
 
@@ -38,11 +38,11 @@ gastar-app-v2/
 │   ├── backend/       # @gastar/backend — Express API (screaming architecture)
 │   └── frontend/      # @gastar/frontend — React SPA (PWA)
 ├── database/
-│   └── prisma/        # Schema, migrations, seed (NOT a workspace package)
-├── ARCHITECTURE.md    # Single source of truth
-├── DESIGN_SYSTEM.md   # Visual identity & UI conventions
-├── COMMIT_RULES.md    # Git conventions
-└── AGENTS.md          # This file
+│   └── prisma/        # Schema & migrations (NOT a workspace package)
+├── docs/              # ARCHITECTURE.md, DESIGN_SYSTEM.md, COMMIT_RULES.md
+├── assets/            # Logo and brand assets
+├── AGENTS.md          # This file
+└── README.md          # Project overview
 ```
 
 **Dependency direction**: `frontend` → `shared` ← `backend`. The `shared` package NEVER imports from `frontend` or `backend`.
@@ -143,7 +143,7 @@ These decisions are final. Do not question, change, or propose alternatives unle
 
 ## Git & Commit Rules
 
-See [`COMMIT_RULES.md`](./COMMIT_RULES.md) for full details.
+See [`COMMIT_RULES.md`](./docs/COMMIT_RULES.md) for full details.
 
 - Conventional Commits with scopes: `feat(backend):`, `fix(frontend):`, `chore(db):`.
 - Squash merge to `main`.
