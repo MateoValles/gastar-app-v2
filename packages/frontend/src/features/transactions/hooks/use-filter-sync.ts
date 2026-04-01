@@ -8,6 +8,13 @@ export function useFilterSync() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialized = useRef(false);
 
+  // Subscribe to store changes to trigger re-render when filters change
+  const accountId = useFiltersStore((s) => s.accountId);
+  const categoryId = useFiltersStore((s) => s.categoryId);
+  const type = useFiltersStore((s) => s.type);
+  const dateFrom = useFiltersStore((s) => s.dateFrom);
+  const dateTo = useFiltersStore((s) => s.dateTo);
+
   // On mount: read URL params → store
   useEffect(() => {
     if (initialized.current) return;
@@ -37,18 +44,17 @@ export function useFilterSync() {
           params.set(key, String(value));
         }
       }
-      setSearchParams(params, { replace: true });
+
+      // Only update URL if params actually changed
+      const newQuery = params.toString();
+      const currentQuery = new URLSearchParams(window.location.search).toString();
+      if (newQuery !== currentQuery) {
+        setSearchParams(params, { replace: true });
+      }
     }, 100);
 
     return () => clearTimeout(timeout);
-  });
-
-  // Subscribe to store changes to trigger re-render when filters change
-  const accountId = useFiltersStore((s) => s.accountId);
-  const categoryId = useFiltersStore((s) => s.categoryId);
-  const type = useFiltersStore((s) => s.type);
-  const dateFrom = useFiltersStore((s) => s.dateFrom);
-  const dateTo = useFiltersStore((s) => s.dateTo);
+  }, [accountId, categoryId, type, dateFrom, dateTo, setSearchParams]);
 
   return { accountId, categoryId, type, dateFrom, dateTo };
 }

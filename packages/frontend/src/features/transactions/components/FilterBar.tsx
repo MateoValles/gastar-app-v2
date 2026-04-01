@@ -138,7 +138,7 @@ export function FilterBar({ accounts, categories }: FilterBarProps) {
         </PopoverContent>
       </Popover>
 
-      {/* Clear button */}
+      {/* Clear button with badge count */}
       {count > 0 && (
         <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
           <X className="size-4" />
@@ -147,13 +147,6 @@ export function FilterBar({ accounts, categories }: FilterBarProps) {
             {count}
           </Badge>
         </Button>
-      )}
-
-      {/* Active filter count indicator when no clear button */}
-      {count > 0 && (
-        <span className="text-xs text-muted-foreground">
-          {t('transactions.filters.activeFilters', { count })}
-        </span>
       )}
     </div>
   );

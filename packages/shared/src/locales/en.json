@@ -60,7 +60,8 @@
     "system": "System",
     "unknown": "Unknown",
     "toggleSidebar": "Toggle sidebar",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "amountPlaceholder": "0.00"
   },
   "auth": {
     "login": "Sign in",
@@ -203,7 +204,8 @@
     "transfer": {
       "from": "From",
       "to": "To",
-      "exchangeRateHelp": "1 {{from}} = {{rate}} {{to}}"
+      "exchangeRateHelp": "1 {{from}} = {{rate}} {{to}}",
+      "exchangeRatePlaceholder": "1.000000"
     },
     "loadingMore": "Loading more...",
     "noMoreTransactions": "No more transactions"

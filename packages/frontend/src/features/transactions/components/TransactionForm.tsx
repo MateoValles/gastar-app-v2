@@ -40,23 +40,52 @@ import { cn } from '@/lib/utils.js';
 
 type TransactionMode = 'income' | 'expense' | 'transfer';
 
-// Single unified schema to avoid discriminated union resolver issues
-const unifiedSchema = z.object({
-  mode: z.enum(['income', 'expense', 'transfer']),
-  // Income/expense fields
-  accountId: z.string().optional(),
-  categoryId: z.string().optional(),
-  amount: z.string().optional(),
-  // Transfer fields
-  fromAccountId: z.string().optional(),
-  toAccountId: z.string().optional(),
-  fromAmount: z.string().optional(),
-  toAmount: z.string().optional(),
-  exchangeRate: z.string().optional(),
-  // Common
-  description: z.string().max(500).optional(),
-  date: z.string(),
-});
+// Zod validation issue codes — NOT rendered in UI; JSX uses t() for display
+const VALIDATION_REQUIRED = 'validation.required';
+const VALIDATION_SAME_ACCOUNT = 'validation.same_account';
+
+// Single unified schema with conditional validation via superRefine
+const unifiedSchema = z
+  .object({
+    mode: z.enum(['income', 'expense', 'transfer']),
+    // Income/expense fields
+    accountId: z.string().optional(),
+    categoryId: z.string().optional(),
+    amount: z.string().optional(),
+    // Transfer fields
+    fromAccountId: z.string().optional(),
+    toAccountId: z.string().optional(),
+    fromAmount: z.string().optional(),
+    toAmount: z.string().optional(),
+    exchangeRate: z.string().optional(),
+    // Common
+    description: z.string().max(500).optional(),
+    date: z.string(),
+  })
+  .superRefine((data, ctx) => {
+    const required = (path: string[]) =>
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path, message: VALIDATION_REQUIRED });
+
+    if (data.mode === 'income' || data.mode === 'expense') {
+      if (!data.accountId) required(['accountId']);
+      if (!data.categoryId) required(['categoryId']);
+      if (!data.amount) required(['amount']);
+    }
+
+    if (data.mode === 'transfer') {
+      if (!data.fromAccountId) required(['fromAccountId']);
+      if (!data.toAccountId) required(['toAccountId']);
+      if (!data.fromAmount) required(['fromAmount']);
+      if (!data.toAmount) required(['toAmount']);
+      if (data.fromAccountId && data.toAccountId && data.fromAccountId === data.toAccountId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['toAccountId'],
+          message: VALIDATION_SAME_ACCOUNT,
+        });
+      }
+    }
+  });
 
 type UnifiedFormValues = z.infer<typeof unifiedSchema>;
 
@@ -132,6 +161,7 @@ export function TransactionForm({
   // Watch selected accounts for cross-currency detection
   const fromAccountId = watch('fromAccountId');
   const toAccountId = watch('toAccountId');
+  const watchedExchangeRate = watch('exchangeRate');
 
   const fromAccount = accounts.find((a) => a.id === fromAccountId);
   const toAccount = accounts.find((a) => a.id === toAccountId);
@@ -285,7 +315,7 @@ export function TransactionForm({
           id="tx-amount"
           type="text"
           inputMode="decimal"
-          placeholder="0.00"
+          placeholder={t('common.amountPlaceholder')}
           disabled={isLoading}
           aria-invalid={!!errors.amount}
           {...register('amount')}
@@ -334,7 +364,7 @@ export function TransactionForm({
           id="tx-from-amount"
           type="text"
           inputMode="decimal"
-          placeholder="0.00"
+          placeholder={t('common.amountPlaceholder')}
           disabled={isLoading}
           aria-invalid={!!errors.fromAmount}
           {...register('fromAmount')}
@@ -381,7 +411,7 @@ export function TransactionForm({
           id="tx-to-amount"
           type="text"
           inputMode="decimal"
-          placeholder="0.00"
+          placeholder={t('common.amountPlaceholder')}
           disabled={isLoading}
           aria-invalid={!!errors.toAmount}
           {...register('toAmount')}
@@ -399,16 +429,16 @@ export function TransactionForm({
             id="tx-exchange-rate"
             type="text"
             inputMode="decimal"
-            placeholder="1.000000"
+            placeholder={t('transactions.transfer.exchangeRatePlaceholder')}
             disabled={isLoading}
             aria-invalid={!!errors.exchangeRate}
             {...register('exchangeRate')}
           />
-          {fromAccount && toAccount && (
+          {fromAccount && toAccount && watchedExchangeRate && (
             <span className="text-xs text-muted-foreground">
               {t('transactions.transfer.exchangeRateHelp', {
                 from: fromAccount.currency,
-                rate: '...',
+                rate: watchedExchangeRate,
                 to: toAccount.currency,
               })}
             </span>
@@ -509,10 +539,14 @@ function buildDefaultValues(
   }
 
   if (mode === 'transfer') {
+    // Respect transferSide so from/to accounts and amounts are mapped correctly.
+    // The "out" leg is the debit side (from), the "in" leg is the credit side (to).
+    const isOutLeg = transaction.transferSide === 'out' || transaction.transferSide === null;
+
     return {
       mode: 'transfer',
-      fromAccountId: transaction.accountId,
-      toAccountId: transaction.transferPeerAccountId ?? '',
+      fromAccountId: isOutLeg ? transaction.accountId : (transaction.transferPeerAccountId ?? ''),
+      toAccountId: isOutLeg ? (transaction.transferPeerAccountId ?? '') : transaction.accountId,
       fromAmount: transaction.amount,
       toAmount: transaction.amount,
       exchangeRate: transaction.exchangeRate ?? undefined,

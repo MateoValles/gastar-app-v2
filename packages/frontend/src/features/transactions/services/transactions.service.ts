@@ -38,7 +38,10 @@ export async function getTransactions(query: TransactionQuery = {}): Promise<Tra
   const queryString = params.toString();
   const url = queryString ? `/transactions?${queryString}` : '/transactions';
   const response = await get<ApiResponse<TransactionResponse[]>>(url);
-  return { data: response.data, meta: response.meta! };
+  if (!response.meta) {
+    throw new Error('MISSING_PAGINATION_META');
+  }
+  return { data: response.data, meta: response.meta };
 }
 
 export async function getTransaction(id: string): Promise<TransactionResponse> {
