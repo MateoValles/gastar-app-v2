@@ -1,1 +1,1 @@
-export { default } from '@/features/dashboard/pages/DashboardPage.js';
+export { default } from '@/features/dashboard/pages/DashboardPage';

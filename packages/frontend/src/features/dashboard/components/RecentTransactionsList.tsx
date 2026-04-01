@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router';
 import { buttonVariants } from '@/components/ui/button.js';
-import { formatDate } from '@/lib/utils.js';
-import { cn } from '@/lib/utils.js';
+import { formatDate, cn } from '@/lib/utils.js';
 import type { RecentTransactionItem } from '@gastar/shared';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────

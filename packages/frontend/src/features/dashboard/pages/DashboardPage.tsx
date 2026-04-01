@@ -34,10 +34,12 @@ export default function DashboardPage() {
   // ─── Error state ─────────────────────────────────────────────────────────────
 
   if (error) {
-    const errorCode = error instanceof ApiError ? error.code : 'GENERIC';
+    const errorCode = error instanceof ApiError ? error.code : 'generic';
     return (
       <div className="p-4 md:p-6">
-        <p className="text-sm text-destructive">{t(`errors.${errorCode}`)}</p>
+        <p className="text-sm text-destructive">
+          {t(`errors.${errorCode}`, { defaultValue: t('errors.generic') })}
+        </p>
       </div>
     );
   }
