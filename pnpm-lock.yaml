@@ -59,6 +59,9 @@ importers:
       jose:
         specifier: ^6.2.2
         version: 6.2.2
+      prisma:
+        specifier: ^6.0.0
+        version: 6.19.2(typescript@5.9.3)
       resend:
         specifier: ^6.9.4
         version: 6.9.4
