@@ -132,6 +132,7 @@ const HASHED_PASSWORD = '$2b$12$hashedPasswordValue';
 
 const PLAIN_RESET_TOKEN = 'abc123deadbeef';
 const HASHED_RESET_TOKEN = 'sha256hashoftoken';
+const USER_CREATED_AT = new Date('2026-01-01T00:00:00.000Z');
 
 const ACCESS_TOKEN = 'mock-access-token';
 const REFRESH_TOKEN = 'mock-refresh-token';
@@ -141,6 +142,7 @@ const prismaUser = {
   id: USER_ID,
   email: USER_EMAIL,
   name: USER_NAME,
+  createdAt: USER_CREATED_AT,
   passwordHash: HASHED_PASSWORD,
   settings: { language: 'es' },
 };
@@ -150,6 +152,7 @@ const prismaUserNoSettings = {
   id: USER_ID,
   email: USER_EMAIL,
   name: USER_NAME,
+  createdAt: USER_CREATED_AT,
   passwordHash: HASHED_PASSWORD,
   settings: null,
 };
@@ -159,6 +162,7 @@ const prismaUserCreated = {
   id: USER_ID,
   email: USER_EMAIL,
   name: USER_NAME,
+  createdAt: USER_CREATED_AT,
   passwordHash: HASHED_PASSWORD,
 };
 
@@ -168,6 +172,7 @@ const expectedProfile = {
   email: USER_EMAIL,
   name: USER_NAME,
   language: 'es',
+  createdAt: USER_CREATED_AT.toISOString(),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

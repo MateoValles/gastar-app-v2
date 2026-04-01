@@ -26,6 +26,7 @@ function toUserProfile(user: {
   id: string;
   email: string;
   name: string;
+  createdAt: Date;
   settings: { language: string } | null;
 }): UserProfile {
   return {
@@ -33,6 +34,7 @@ function toUserProfile(user: {
     email: user.email,
     name: user.name,
     language: user.settings?.language ?? 'es',
+    createdAt: user.createdAt.toISOString(),
   };
 }
 

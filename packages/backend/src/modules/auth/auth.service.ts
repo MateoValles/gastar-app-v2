@@ -5,11 +5,7 @@ import type { LoginInput, RegisterInput, UserProfile } from '@gastar/shared';
 import { authConfig } from '@/config/auth.js';
 import { env } from '@/config/env.js';
 import { prisma } from '@/lib/prisma.js';
-import {
-  ConflictError,
-  NotFoundError,
-  UnauthorizedError,
-} from '@/lib/errors.js';
+import { ConflictError, NotFoundError, UnauthorizedError } from '@/lib/errors.js';
 import { sendPasswordResetEmail } from '@/lib/resend.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -74,10 +70,16 @@ async function generateTokens(
  * Maps a Prisma user row + settings to the UserProfile DTO.
  */
 function toUserProfile(
-  user: { id: string; email: string; name: string },
+  user: { id: string; email: string; name: string; createdAt: Date },
   language: string,
 ): UserProfile {
-  return { id: user.id, email: user.email, name: user.name, language };
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    language,
+    createdAt: user.createdAt.toISOString(),
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -149,8 +151,7 @@ export async function login(
 
   // Use a constant-time comparison to prevent timing attacks — always run
   // bcrypt.compare even if user is not found (compare against a dummy hash).
-  const dummyHash =
-    '$2b$12$invaliddummyhashfortimingneutrality.padding.1234567890';
+  const dummyHash = '$2b$12$invaliddummyhashfortimingneutrality.padding.1234567890';
   const passwordHash = user?.passwordHash ?? dummyHash;
   const isValid = await bcrypt.compare(password, passwordHash);
 
@@ -180,11 +181,7 @@ export async function refresh(
       issuer: 'gastar',
     });
 
-    if (
-      typeof payload.sub !== 'string' ||
-      !payload.sub ||
-      payload['type'] !== 'refresh'
-    ) {
+    if (typeof payload.sub !== 'string' || !payload.sub || payload['type'] !== 'refresh') {
       throw new UnauthorizedError('Invalid refresh token');
     }
 
@@ -249,10 +246,7 @@ export async function forgotPassword(email: string): Promise<void> {
  *
  * Throws NotFoundError if the token is invalid or expired.
  */
-export async function resetPassword(
-  token: string,
-  newPassword: string,
-): Promise<void> {
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
   const hash = crypto.createHash('sha256').update(token).digest('hex');
 
   const user = await prisma.user.findFirst({
@@ -266,10 +260,7 @@ export async function resetPassword(
     throw new NotFoundError('Invalid or expired password reset token');
   }
 
-  const passwordHash = await bcrypt.hash(
-    newPassword,
-    authConfig.bcryptSaltRounds,
-  );
+  const passwordHash = await bcrypt.hash(newPassword, authConfig.bcryptSaltRounds);
 
   await prisma.user.update({
     where: { id: user.id },
