@@ -1,4 +1,4 @@
-import { post, clearAccessToken, setAccessToken } from '@/lib/api-client.js';
+import { post, clearAccessToken, setAccessToken, BASE_URL } from '@/lib/api-client.js';
 import { ApiError } from '@/lib/api-error.js';
 import type { ApiResponse, UserProfile } from '@gastar/shared';
 import type {
@@ -7,8 +7,6 @@ import type {
   ForgotPasswordInput,
   ResetPasswordInput,
 } from '@gastar/shared';
-
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/v1';
 
 export interface LoginResponse {
   accessToken: string;

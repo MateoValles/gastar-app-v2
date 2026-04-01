@@ -111,7 +111,14 @@ gastar-app-v2/
 
 ### Infrastructure
 
-In progress — Dockerfile and CI/CD pipeline pending.
+In progress — Dockerfile and GitHub Actions workflow to publish the container image to GHCR are now in place. Dokploy apps were aligned to Docker/GHCR as deployment targets, but final secrets, domains, and the first production rollout are still pending.
+
+Current deployment target contract:
+
+- `development` branch publishes `ghcr.io/mateovalles/gastar-app-v2:development`
+- `main` branch publishes `ghcr.io/mateovalles/gastar-app-v2:latest`
+- Dokploy `production` and `development` apps are expected to run the container on port `3001`
+- Dokploy secrets/domains must be finalized before the first real deployment
 
 ---
 

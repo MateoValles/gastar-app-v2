@@ -1,6 +1,15 @@
 import { ApiError } from './api-error.js';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/v1';
+/**
+ * Base URL for all API requests.
+ *
+ * - Development: override with VITE_API_URL (e.g. 'http://localhost:3001/v1')
+ *   so the frontend dev server can proxy to the backend running on a different port.
+ * - Production (single-container): defaults to '/v1' — same-origin, no CORS needed.
+ *
+ * The env var takes precedence when defined, making dev and CI overrides easy.
+ */
+export const BASE_URL = import.meta.env.VITE_API_URL ?? '/v1';
 
 // Module-level state — NOT in React/Zustand/context
 let accessToken: string | null = null;

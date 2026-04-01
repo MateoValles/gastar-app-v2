@@ -3,6 +3,8 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { env } from '@/config/env.js';
 import { errorMiddleware } from '@/middleware/error.middleware.js';
 import { NotFoundError } from '@/lib/errors.js';
@@ -21,6 +23,18 @@ export interface AppOptions {
    * Used in integration tests to avoid 429 errors during rapid sequential requests.
    */
   disableRateLimit?: boolean;
+  /**
+   * Override for SERVE_FRONTEND env var.
+   * Useful in unit tests that want to exercise the static serving code path
+   * without requiring real env var setup or module re-loading.
+   */
+  serveFrontend?: boolean;
+  /**
+   * Override for FRONTEND_DIST_PATH env var.
+   * When serveFrontend is true and this is provided, it takes precedence over
+   * both env.FRONTEND_DIST_PATH and the default resolved path.
+   */
+  frontendDistPath?: string;
 }
 
 // ── App Factory ───────────────────────────────────────────────────────────────
@@ -33,13 +47,17 @@ export function createApp(options: AppOptions = {}): Express {
   // 1. Security headers (must be first)
   app.use(helmet());
 
-  // 2. CORS — allow configured origin with credentials for cookie-based auth
-  app.use(
-    cors({
-      origin: env.CORS_ORIGIN,
-      credentials: true,
-    }),
-  );
+  // 2. CORS — only needed when frontend is on a different origin (development).
+  //    In single-container mode (SERVE_FRONTEND=true), browser requests are same-origin
+  //    so CORS headers are not required and CORS_ORIGIN may be omitted.
+  if (env.CORS_ORIGIN) {
+    app.use(
+      cors({
+        origin: env.CORS_ORIGIN,
+        credentials: true,
+      }),
+    );
+  }
 
   // 3. Cookie parser — required for req.cookies (refresh token endpoint)
   app.use(cookieParser());
@@ -95,6 +113,44 @@ export function createApp(options: AppOptions = {}): Express {
 
   // Dashboard routes
   app.use('/v1/dashboard', dashboardRoutes);
+
+  // ── Static frontend serving (single-container mode) ───────────────────────
+  //
+  // When SERVE_FRONTEND=true (via env or options override), Express serves the
+  // compiled SPA and handles the SPA fallback (any route not matched by
+  // /health or /v1/* returns index.html).
+  //
+  // IMPORTANT: This block MUST come after all API routes so that:
+  //   1. API routes are always matched first.
+  //   2. The 404 handler below is only reached for unmatched API routes.
+  //   3. The SPA fallback only applies to frontend routes.
+
+  const shouldServeFrontend = options.serveFrontend ?? env.SERVE_FRONTEND;
+
+  if (shouldServeFrontend) {
+    const distPath =
+      options.frontendDistPath ??
+      env.FRONTEND_DIST_PATH ??
+      // Resolve relative to this file: packages/backend/src/app.ts
+      // → ../../.. = packages/ → ../../../frontend/dist = packages/frontend/dist
+      path.resolve(fileURLToPath(import.meta.url), '../../../frontend/dist');
+
+    // Serve static assets (JS, CSS, images, etc.)
+    app.use(express.static(distPath));
+
+    // SPA fallback — any GET request that hasn't matched an API route returns
+    // index.html so that React Router can handle client-side navigation.
+    // Only GET requests are handled; POST/PATCH/DELETE fall through to 404.
+    app.get(/^(?!\/v1(?:\/|$)|\/health(?:\/|$)).*$/, (req, res, next) => {
+      // Requests that look like asset files (e.g. /app.js, /styles.css, /favicon.svg)
+      // should NOT receive index.html. Let them fall through so Express returns 404.
+      if (path.extname(req.path)) {
+        return next();
+      }
+
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
 
   // ── 404 handler ───────────────────────────────────────────────────────────
 
